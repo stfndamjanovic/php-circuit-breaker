@@ -2,8 +2,8 @@
 
 namespace Stfn\CircuitBreaker\Stores;
 
-use Stfn\CircuitBreaker\Counter;
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Counter;
 
 class RedisStore implements IStoreProvider
 {
