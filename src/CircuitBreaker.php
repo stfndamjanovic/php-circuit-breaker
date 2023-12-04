@@ -62,7 +62,7 @@ class CircuitBreaker
         return $this->store->state() != CircuitState::Closed;
     }
 
-    public function shouldBecomeHalfOpen()
+    public function shouldBecomeHalfOpen(): bool
     {
         $lastChange = $this->store->lastChangedDateUtc();
 
@@ -79,7 +79,7 @@ class CircuitBreaker
         return false;
     }
 
-    public function handleFailure(\Exception $exception)
+    public function handleFailure(\Exception $exception): void
     {
         // Log exception
 
@@ -91,7 +91,7 @@ class CircuitBreaker
         }
     }
 
-    public function openCircuit()
+    public function openCircuit(): void
     {
         $this->store->open();
         $this->store->reset();

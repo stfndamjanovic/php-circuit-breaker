@@ -14,7 +14,7 @@ class CircuitBreakerTest extends TestCase
 {
     public function test_if_it_can_handle_function_success()
     {
-        $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), $this->getStoreInstance());
+        $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), new InMemoryStore());
 
         $result = $circuitBreaker->run(function () {
             return true;
@@ -33,7 +33,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_throw_an_exception_if_circuit_breaker_is_open()
     {
-        $store = $this->getStoreInstance();
+        $store = new InMemoryStore();
         $store->state = CircuitState::Open;
 
         $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), $store);
@@ -47,7 +47,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_record_every_success()
     {
-        $store = $this->getStoreInstance();
+        $store = new InMemoryStore();
 
         $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), $store);
 
@@ -69,9 +69,11 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_record_every_failure()
     {
-        $store = $this->getStoreInstance();
-        $config = $this->getDefaultConfig();
-        $config->setMaxNumberOfFailures(4);
+        $store = new InMemoryStore();
+
+        $config = Config::make('test', [
+            'max_number_of_failures' => 4,
+        ]);
 
         $circuitBreaker = new CircuitBreaker($config, $store);
 
@@ -97,10 +99,11 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_open_circuit_after_failure_threshold()
     {
-        $store = $this->getStoreInstance();
+        $store = new InMemoryStore();
 
-        $config = $this->getDefaultConfig();
-        $config->setMaxNumberOfFailures(3);
+        $config = Config::make('test-service', [
+            'max_number_of_failures' => 3,
+        ]);
 
         $circuitBreaker = new CircuitBreaker($config, $store);
 
@@ -125,9 +128,11 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_counter_is_reset_after_circuit_change_state_from_close_to_open()
     {
-        $store = $this->getStoreInstance();
-        $config = $this->getDefaultConfig();
-        $config->setMaxNumberOfFailures(3);
+        $store = new InMemoryStore();
+
+        $config = Config::make('test-service', [
+            'max_number_of_failures' => 3,
+        ]);
 
         $circuitBreaker = new CircuitBreaker($config, $store);
 
@@ -153,14 +158,15 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_close_circuit_after_success_calls()
     {
-        $store = $this->getStoreInstance();
+        $store = new InMemoryStore();
         $store->open();
 
         Carbon::setTestNow(Carbon::yesterday());
 
-        $config = $this->getDefaultConfig();
-        $config->setNumberOfSuccessToCloseState(3)
-            ->setOpenToHalfOpenWaitTime(0);
+        $config = Config::make('service-test', [
+            'open_to_half_open_wait_time' => 0,
+            'number_of_success_to_close_state' => 3,
+        ]);
 
         $circuitBreaker = new CircuitBreaker($config, $store);
 
@@ -181,14 +187,15 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_transit_back_to_closed_state_after_first_fail()
     {
-        $store = $this->getStoreInstance();
+        $store = new InMemoryStore();
         $store->state = CircuitState::Open;
 
         Carbon::setTestNow(Carbon::yesterday());
 
-        $config = $this->getDefaultConfig();
-        $config->setNumberOfSuccessToCloseState(3)
-            ->setOpenToHalfOpenWaitTime(0);
+        $config = Config::make('service-test', [
+            'number_of_success_to_close_state' => 3,
+            'open_to_half_open_wait_time' => 0,
+        ]);
 
         $circuitBreaker = new CircuitBreaker($config, $store);
 
@@ -222,11 +229,6 @@ class CircuitBreakerTest extends TestCase
     public function getDefaultConfig()
     {
         return new Config("test-service");
-    }
-
-    private function getStoreInstance()
-    {
-        return new InMemoryStore();
     }
 
     //    public function test_if_it_will_fail_after_percentage_threshold_for_failure()

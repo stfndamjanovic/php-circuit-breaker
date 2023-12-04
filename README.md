@@ -1,32 +1,38 @@
-# This is my package circuit-breaker
+# Circuit breaker in PHP
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/stfndamjanovic/circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfndamjanovic/circuit-breaker)
 [![Tests](https://img.shields.io/github/actions/workflow/status/stfndamjanovic/circuit-breaker/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/stfndamjanovic/circuit-breaker/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/stfndamjanovic/circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfndamjanovic/circuit-breaker)
 
-This is where your description should go. Try and limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/circuit-breaker.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/circuit-breaker)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+This is implementation of circuit breaker in PHP.
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require stfndamjanovic/circuit-breaker
+composer require stfndamjanovic/php-circuit-breaker
 ```
 
 ## Usage
 
 ```php
-$skeleton = new Stfn\CircuitBreaker();
-echo $skeleton->echoPhrase('Hello, Stfn!');
+use Stfn\CircuitBreaker\CircuitBreaker;
+use Stfn\CircuitBreaker\Stores\RedisStore;
+use Redis;
+use Stfn\CircuitBreaker\Config;
+
+$redis = new Redis('127.0.0.1');
+$redis->connect();
+
+$store = new RedisStore($redis);
+
+$config = new Config("unique-service-name");
+
+$circuitBreaker = new CircuitBreaker($config, $store);
+$circuitBreaker->run(function () {
+    // Your function that could fail
+});
 ```
 
 ## Testing
