@@ -20,51 +20,51 @@ class InMemoryStore implements IStoreProvider
         $this->counter = new Counter();
     }
 
-    public function state(): CircuitState
+    public function state($service): CircuitState
     {
         return $this->state;
     }
 
-    public function lastChangedDateUtc()
+    public function lastChangedDateUtc($service)
     {
         return $this->lastChangedDateUtc;
     }
 
-    public function halfOpen(): void
+    public function halfOpen($service): void
     {
         $this->state = CircuitState::HalfOpen;
     }
 
-    public function open(): void
+    public function open($service): void
     {
         $this->state = CircuitState::Open;
 
         $this->lastChangedDateUtc = Carbon::now("UTC")->toDateTimeString();
     }
 
-    public function close(): void
+    public function close($service): void
     {
         $this->state = CircuitState::Closed;
 
         $this->lastChangedDateUtc = Carbon::now("UTC")->toDateTimeString();
     }
 
-    public function counter(): Counter
+    public function counter($service): Counter
     {
         return $this->counter;
     }
 
-    public function reset()
+    public function reset($service)
     {
         $this->counter = new Counter();
     }
 
-    public function onSuccess($result)
+    public function onSuccess($result, $service)
     {
         $this->counter->success();
     }
 
-    public function incrementFailure(\Exception $exception)
+    public function incrementFailure(\Exception $exception, $service)
     {
         $this->counter->failure();
     }

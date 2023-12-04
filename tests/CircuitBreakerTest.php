@@ -8,6 +8,7 @@ use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Config;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
+use Stfn\CircuitBreaker\Stores\RedisStore;
 use Stfn\CircuitBreaker\Tests\TestClasses\InMemoryStore;
 
 class CircuitBreakerTest extends TestCase
@@ -63,8 +64,8 @@ class CircuitBreakerTest extends TestCase
             $closure();
         }
 
-        $this->assertEquals($tries, $store->counter()->getNumberOfSuccess());
-        $this->assertEquals(0, $store->counter()->getNumberOfFailures());
+        $this->assertEquals($tries, $store->counter('test-service')->getNumberOfSuccess());
+        $this->assertEquals(0, $store->counter('test-service')->getNumberOfFailures());
     }
 
     public function test_if_it_will_record_every_failure()
@@ -93,8 +94,8 @@ class CircuitBreakerTest extends TestCase
             }
         }
 
-        $this->assertEquals($tries, $store->counter()->getNumberOfFailures());
-        $this->assertEquals(0, $store->counter()->getNumberOfSuccess());
+        $this->assertEquals($tries, $store->counter('test-service')->getNumberOfFailures());
+        $this->assertEquals(0, $store->counter('test-service')->getNumberOfSuccess());
     }
 
     public function test_if_it_will_open_circuit_after_failure_threshold()
@@ -152,14 +153,14 @@ class CircuitBreakerTest extends TestCase
             }
         }
 
-        $this->assertEquals(0, $store->counter()->getNumberOfSuccess());
-        $this->assertEquals(0, $store->counter()->getNumberOfFailures());
+        $this->assertEquals(0, $store->counter('test-service')->getNumberOfSuccess());
+        $this->assertEquals(0, $store->counter('test-service')->getNumberOfFailures());
     }
 
     public function test_if_it_will_close_circuit_after_success_calls()
     {
         $store = new InMemoryStore();
-        $store->open();
+        $store->open('test-service');
 
         Carbon::setTestNow(Carbon::yesterday());
 
@@ -182,7 +183,7 @@ class CircuitBreakerTest extends TestCase
             $closure();
         }
 
-        $this->assertEquals(CircuitState::Closed, $store->state());
+        $this->assertEquals(CircuitState::Closed, $store->state('test-service'));
     }
 
     public function test_if_it_will_transit_back_to_closed_state_after_first_fail()
@@ -231,16 +232,31 @@ class CircuitBreakerTest extends TestCase
         return new Config("test-service");
     }
 
-    //    public function test_if_it_will_fail_after_percentage_threshold_for_failure()
-    //    {
+    //        public function test_if_it_will_fail_after_percentage_threshold_for_failure()
+    //        {
     //
-    //    }
+    //        }
     //    public function test_if_redis_work()
     //    {
     //        $redis = new \Redis();
     //        $redis->connect('127.0.0.1');
     //
-    //        $store = new RedisStore("test-circuit", $redis);
-    //        $store->halfOpen();
+    //        $store = new RedisStore($redis);
+    //
+    //        $config = Config::make('test-service', [
+    //            'max_number_of_failures' => 3,
+    //        ]);
+    //
+    //        $circuitBreaker = new CircuitBreaker($config, $store);
+    //
+    //        try {
+    //            $result = $circuitBreaker->run(function () {
+    //                throw new \Exception('test');
+    //            });
+    //        } catch (\Exception $exception) {
+    //            dump($exception->getMessage());
+    //        }
+    //
+    //        dd($store->counter('test-service'));
     //    }
 }

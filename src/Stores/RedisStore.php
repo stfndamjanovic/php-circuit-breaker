@@ -14,63 +14,92 @@ class RedisStore implements IStoreProvider
         $this->redis = $redis;
     }
 
-    public function state(): CircuitState
+    public function state($service): CircuitState
     {
-        return $this->redis->get($this->getNamespace());
+        $key = $this->getStateKey($service);
+
+        $state = $this->redis->get($key);
+
+        if (! $state) {
+            return CircuitState::Closed;
+        }
+
+        return CircuitState::from($state);
     }
 
-    public function lastChangedDateUtc()
+    public function lastChangedDateUtc($service)
     {
         // TODO: Implement lastChangedDateUtc() method.
     }
 
-    public function halfOpen(): void
+    public function halfOpen($service): void
     {
-        $this->redis->set($this->getNamespace(), CircuitState::HalfOpen->value, 1000);
+        $this->redis->set($this->getStateKey($service), CircuitState::HalfOpen->value, 1000);
     }
 
-    public function open(): void
+    public function open($service): void
     {
         // ToDo Define timeouts
-        $this->redis->set($this->getNamespace(), CircuitState::Open->value, 1000);
+        $this->redis->set($this->getStateKey($service), CircuitState::Open->value, 1000);
     }
 
-    public function close(): void
+    public function close($service): void
     {
-        $this->redis->set($this->getNamespace(), CircuitState::Closed->value, 1000);
+        $this->redis->set($this->getStateKey($service), CircuitState::Closed->value, 1000);
     }
 
-    public function counter(): Counter
+    public function counter($service): Counter
     {
-        // TODO: Implement counter() method.
-    }
+        $key = $this->getCounterKey($service);
 
-    public function reset()
-    {
-        // TODO: Implement reset() method.
-    }
+        $counter = $this->redis->get($key);
 
-    public function onSuccess($result)
-    {
-        // TODO: Implement onSuccess() method.
-    }
-
-    public function incrementFailure(\Exception $exception)
-    {
-        $failuresKey = $this->getNamespace() . ':failure:counter';
-
-        if (! $this->redis->get($failuresKey)) {
-            $this->redis->multi();
-            $this->redis->incr($failuresKey);
-
-            return (bool) ($this->redis->exec()[0] ?? false);
+        if (! $counter) {
+            return new Counter();
         }
 
-        return (bool) $this->redis->incr($failuresKey);
+        return unserialize($counter);
     }
 
-    public function getNamespace()
+    public function reset($service)
     {
-        return "stfn-circuit-breaker-package:{$this->service}";
+        $counter = $this->counter($service);
+
+        $counter->reset();
+
+        $this->redis->set($this->getCounterKey($service), serialize($counter), 1000);
+    }
+
+    public function onSuccess($result, $service)
+    {
+        $counter = $this->counter($service);
+
+        $counter->success();
+
+        $this->redis->set($this->getCounterKey($service), serialize($counter), 1000);
+    }
+
+    public function incrementFailure(\Exception $exception, $service)
+    {
+        $counter = $this->counter($service);
+
+        $counter->failure();
+
+        $this->redis->set($this->getCounterKey($service), serialize($counter), 1000);
+    }
+
+    protected function getCounterKey($service)
+    {
+        return $this->getKey($service) . ':counter';
+    }
+
+    protected function getStateKey($service)
+    {
+        return $this->getKey($service) . ":state";
+    }
+
+    protected function getKey($service)
+    {
+        return "stfn-circuit-breaker-package:{$service}";
     }
 }

@@ -27,6 +27,12 @@ class Counter
         $this->numberOfFailures++;
     }
 
+    public function reset()
+    {
+        $this->numberOfFailures = 0;
+        $this->numberOfSuccess = 0;
+    }
+
     public function failurePercent(): float
     {
         return round($this->numberOfFailures / $this->totalTries(), 2);

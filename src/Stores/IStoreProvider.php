@@ -7,21 +7,21 @@ use Stfn\CircuitBreaker\Counter;
 
 interface IStoreProvider
 {
-    public function state(): CircuitState;
+    public function state($service): CircuitState;
 
-    public function lastChangedDateUtc();
+    public function lastChangedDateUtc($service);
 
-    public function halfOpen(): void;
+    public function halfOpen($service): void;
 
-    public function open(): void;
+    public function open($service): void;
 
-    public function close(): void;
+    public function close($service): void;
 
-    public function counter(): Counter;
+    public function counter($service): Counter;
 
-    public function reset();
+    public function reset($service);
 
-    public function onSuccess($result);
+    public function onSuccess($result, $service);
 
-    public function incrementFailure(\Exception $exception);
+    public function incrementFailure(\Exception $exception, $service);
 }
