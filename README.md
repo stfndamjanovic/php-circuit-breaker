@@ -30,6 +30,7 @@ $store = new RedisStore($redis);
 $config = new Config("unique-service-name");
 
 $circuitBreaker = new CircuitBreaker($config, $store);
+
 $circuitBreaker->run(function () {
     // Your function that could fail
 });
