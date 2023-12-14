@@ -7,17 +7,18 @@ use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Config;
+use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
-use Stfn\CircuitBreaker\Stores\RedisStore;
-use Stfn\CircuitBreaker\Tests\TestClasses\InMemoryStore;
+use Stfn\CircuitBreaker\Storage\InMemoryStorage;
+use Stfn\CircuitBreaker\Storage\RedisStorage;
 
 class CircuitBreakerTest extends TestCase
 {
     public function test_if_it_can_handle_function_success()
     {
-        $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), new InMemoryStore());
+        $breaker = new CircuitBreaker();
 
-        $result = $circuitBreaker->run(function () {
+        $result = $breaker->call(function () {
             return true;
         });
 
@@ -25,7 +26,7 @@ class CircuitBreakerTest extends TestCase
 
         $object = new \stdClass();
 
-        $result = $circuitBreaker->run(function () use ($object) {
+        $result = $breaker->call(function () use ($object) {
             return $object;
         });
 
@@ -34,229 +35,155 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_throw_an_exception_if_circuit_breaker_is_open()
     {
-        $store = new InMemoryStore();
-        $store->state = CircuitState::Open;
-
-        $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), $store);
+        $breaker = new CircuitBreaker();
+        $breaker->openCircuit();
 
         $this->expectException(CircuitOpenException::class);
 
-        $circuitBreaker->run(function () {
+        $breaker->call(function () {
             return true;
         });
     }
 
     public function test_if_it_will_record_every_success()
     {
-        $store = new InMemoryStore();
+        $breaker = new CircuitBreaker();
 
-        $circuitBreaker = new CircuitBreaker($this->getDefaultConfig(), $store);
-
-        $closure = function () use ($circuitBreaker) {
-            $circuitBreaker->run(function () {
-                return true;
-            });
+        $success = function () {
+            return true;
         };
 
         $tries = 3;
 
         foreach (range(1, $tries) as $i) {
-            $closure();
+            $breaker->call($success);
         }
 
-        $this->assertEquals($tries, $store->counter('test-service')->getNumberOfSuccess());
-        $this->assertEquals(0, $store->counter('test-service')->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->storage->getFailuresCount());
     }
 
     public function test_if_it_will_record_every_failure()
     {
-        $store = new InMemoryStore();
-
-        $config = Config::make('test', [
-            'max_number_of_failures' => 4,
+        $config = Config::make([
+            'failure_threshold' => 4
         ]);
 
-        $circuitBreaker = new CircuitBreaker($config, $store);
+        $breaker = new CircuitBreaker($config);
 
-        $closure = function () use ($circuitBreaker) {
-            $circuitBreaker->run(function () {
-                throw new \Exception('test');
-            });
+        $fail = function () {
+            throw new \Exception("test");
         };
 
         $tries = 3;
 
         foreach (range(1, $tries) as $i) {
-            try {
-                $closure();
-            } catch (\Exception $exception) {
-
-            }
+            $breaker->call($fail);
         }
 
-        $this->assertEquals($tries, $store->counter('test-service')->getNumberOfFailures());
-        $this->assertEquals(0, $store->counter('test-service')->getNumberOfSuccess());
+        $this->assertEquals($tries, $breaker->storage->getFailuresCount());
     }
 
     public function test_if_it_will_open_circuit_after_failure_threshold()
     {
-        $store = new InMemoryStore();
-
-        $config = Config::make('test-service', [
-            'max_number_of_failures' => 3,
+        $config = Config::make( [
+            'failure_threshold' => 3,
         ]);
 
-        $circuitBreaker = new CircuitBreaker($config, $store);
+        $breaker = new CircuitBreaker($config);
 
-        $closure = function () use ($circuitBreaker) {
-            $circuitBreaker->run(function () {
-                throw new \Exception('test');
-            });
+        $fail = function () {
+          throw new \Exception();
         };
 
         $tries = 4;
 
         foreach (range(1, $tries) as $i) {
             try {
-                $closure();
+                $breaker->call($fail);
             } catch (\Exception $exception) {
 
             }
         }
 
-        $this->assertTrue($circuitBreaker->isOpen());
+        $this->assertTrue($breaker->isOpen());
     }
 
     public function test_if_counter_is_reset_after_circuit_change_state_from_close_to_open()
     {
-        $store = new InMemoryStore();
-
-        $config = Config::make('test-service', [
-            'max_number_of_failures' => 3,
+        $config = Config::make([
+            'failure_threshold' => 3
         ]);
 
-        $circuitBreaker = new CircuitBreaker($config, $store);
+        $breaker = new CircuitBreaker($config);
 
-        $closure = function () use ($circuitBreaker) {
-            $circuitBreaker->run(function () {
-                throw new \Exception('test');
-            });
+        $fail = function () {
+          throw new \Exception();
         };
 
         $tries = 4;
 
         foreach (range(1, $tries) as $i) {
             try {
-                $closure();
+                $breaker->call($fail);
             } catch (\Exception $exception) {
 
             }
         }
 
-        $this->assertEquals(0, $store->counter('test-service')->getNumberOfSuccess());
-        $this->assertEquals(0, $store->counter('test-service')->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->storage->getFailuresCount());
     }
 
-    public function test_if_it_will_close_circuit_after_success_calls()
+    public function test_if_it_will_close_circuit_after_success_call()
     {
-        $store = new InMemoryStore();
-        $store->open('test-service');
+        $breaker = new CircuitBreaker();
+        $breaker->storage->setState(CircuitState::HalfOpen);
 
-        Carbon::setTestNow(Carbon::yesterday());
-
-        $config = Config::make('service-test', [
-            'open_to_half_open_wait_time' => 0,
-            'number_of_success_to_close_state' => 3,
-        ]);
-
-        $circuitBreaker = new CircuitBreaker($config, $store);
-
-        $closure = function () use ($circuitBreaker) {
-            $circuitBreaker->run(function () {
-                return true;
-            });
+        $success = function () {
+          return true;
         };
 
-        $tries = 3;
+        $breaker->call($success);
 
-        foreach (range(1, $tries) as $i) {
-            $closure();
-        }
-
-        $this->assertEquals(CircuitState::Closed, $store->state('test-service'));
+        $this->assertEquals(CircuitState::Closed, $breaker->storage->getState());
     }
 
-    public function test_if_it_will_transit_back_to_closed_state_after_first_fail()
+    public function test_if_it_will_transit_back_to_open_state_after_first_fail()
     {
-        $store = new InMemoryStore();
-        $store->state = CircuitState::Open;
+        $breaker = new CircuitBreaker();
 
-        Carbon::setTestNow(Carbon::yesterday());
+        $breaker->storage->setState(CircuitState::HalfOpen);
 
-        $config = Config::make('service-test', [
-            'number_of_success_to_close_state' => 3,
-            'open_to_half_open_wait_time' => 0,
-        ]);
-
-        $circuitBreaker = new CircuitBreaker($config, $store);
-
-        $closure = function ($index) use ($circuitBreaker) {
-            $circuitBreaker->run(function () use ($index) {
-                $dataSet = [
-                    true,
-                    true,
-                    false,
-                ];
-
-                if ($dataSet[$index] === true) {
-                    return true;
-                }
-
-                throw new \Exception("Fail");
-            });
+        $fail = function () {
+          throw new \Exception();
         };
 
-        $tries = 3;
+        $this->expectException(CircuitHalfOpenFailException::class);
 
-        $this->expectException(\Exception::class);
+        $breaker->call($fail);
 
-        foreach (range(1, $tries) as $i) {
-            $closure($i);
-        }
-
-        $this->assertTrue($circuitBreaker->isOpen());
+        $this->assertTrue($breaker->isOpen());
     }
 
-    public function getDefaultConfig()
-    {
-        return new Config("test-service");
-    }
-
-    //        public function test_if_it_will_fail_after_percentage_threshold_for_failure()
-    //        {
-    //
-    //        }
-    //    public function test_if_redis_work()
-    //    {
-    //        $redis = new \Redis();
-    //        $redis->connect('127.0.0.1');
-    //
-    //        $store = new RedisStore($redis);
-    //
-    //        $config = Config::make('test-service', [
-    //            'max_number_of_failures' => 3,
-    //        ]);
-    //
-    //        $circuitBreaker = new CircuitBreaker($config, $store);
-    //
-    //        try {
-    //            $result = $circuitBreaker->run(function () {
-    //                throw new \Exception('test');
-    //            });
-    //        } catch (\Exception $exception) {
-    //            dump($exception->getMessage());
-    //        }
-    //
-    //        dd($store->counter('test-service'));
-    //    }
+//    public function test_if_redis_work()
+//    {
+//        $redis = new \Redis();
+//        $redis->connect('127.0.0.1');
+//
+//        $store = new RedisStorage('test-service', $redis);
+//
+//        $config = Config::make([
+//            'recovery_time' => 60,
+//            'failure_threshold' => 3
+//        ]);
+//
+//        $breaker = new CircuitBreaker($config, $store);
+//
+//        $success = function () {
+//            return true;
+//        };
+//
+//        $result = $breaker->call($success);
+//
+//        dd($result);
+//    }
 }

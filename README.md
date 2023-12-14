@@ -18,14 +18,14 @@ composer require stfndamjanovic/php-circuit-breaker
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
-use Stfn\CircuitBreaker\Stores\RedisStore;
+use Stfn\CircuitBreaker\Storage\RedisStorage;
 use Redis;
 use Stfn\CircuitBreaker\Config;
 
 $redis = new Redis('127.0.0.1');
 $redis->connect();
 
-$store = new RedisStore($redis);
+$store = new RedisStorage($redis);
 
 $config = new Config("unique-service-name");
 

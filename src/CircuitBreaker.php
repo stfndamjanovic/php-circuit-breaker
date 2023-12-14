@@ -2,101 +2,89 @@
 
 namespace Stfn\CircuitBreaker;
 
-use Carbon\Carbon;
-use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
-use Stfn\CircuitBreaker\Stores\IStoreProvider;
+use Stfn\CircuitBreaker\StateHandlers\ClosedStateHandler;
+use Stfn\CircuitBreaker\StateHandlers\HalfOpenStateHandler;
+use Stfn\CircuitBreaker\StateHandlers\OpenStateHandler;
+use Stfn\CircuitBreaker\Storage\CircuitBreakerStorage;
+use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 
 class CircuitBreaker
 {
-    protected Config $config;
+    /**
+     * @var Config
+     */
+    public Config $config;
 
-    protected IStoreProvider $store;
+    /**
+     * @var CircuitBreakerStorage
+     */
+    public CircuitBreakerStorage $storage;
 
-    protected string $service;
-
-    public function __construct(Config $config, IStoreProvider $store)
+    /**
+     * @param Config|null $config
+     * @param CircuitBreakerStorage|null $storage
+     */
+    public function __construct(Config $config = null, CircuitBreakerStorage $storage = null)
     {
-        $this->config = $config;
-        $this->store = $store;
-        $this->service = $config->getServiceName();
+        $this->config = $config ?: new Config();
+        $this->storage = $storage ?: new InMemoryStorage();
     }
 
-    public function run(\Closure $action)
+    /**
+     * @param \Closure $action
+     * @param ...$args
+     * @return mixed
+     * @throws \Exception
+     */
+    public function call(\Closure $action, ...$args)
     {
-        if ($this->isOpen()) {
-            if (! $this->shouldBecomeHalfOpen()) {
-                throw CircuitOpenException::make($this->service);
-            }
+        $stateHandler = $this->makeStateHandler();
 
-            try {
-                $this->store->halfOpen($this->service);
-
-                $result = call_user_func($action);
-
-                $this->store->onSuccess($result, $this->service);
-            } catch (\Exception $exception) {
-                $this->openCircuit();
-
-                throw $exception;
-            }
-
-            if ($this->store->counter($this->service)->getNumberOfSuccess() >= $this->config->numberOfSuccessToCloseState) {
-                $this->store->close($this->service);
-            }
-
-            return $result;
-        }
-
-        try {
-            $result = call_user_func($action);
-
-            $this->store->onSuccess($result, $this->service);
-        } catch (\Exception $exception) {
-            $this->handleFailure($exception);
-
-            throw $exception;
-        }
-
-        return $result;
+        return $stateHandler->call($action, $args);
     }
 
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function makeStateHandler()
+    {
+        $state = $this->storage->getState();
+
+        $map = [
+            CircuitState::Closed->value => ClosedStateHandler::class,
+            CircuitState::HalfOpen->value => HalfOpenStateHandler::class,
+            CircuitState::Open->value => OpenStateHandler::class
+        ];
+
+        if (!array_key_exists($state->value, $map)) {
+            throw new \Exception("State {$state->value} is not valid");
+        }
+
+        return new $map[$state->value]($this);
+    }
+
+    /**
+     * @return void
+     */
+    public function openCircuit()
+    {
+        $this->storage->open();
+    }
+
+    /**
+     * @return void
+     */
+    public function closeCircuit()
+    {
+        $this->storage->close();
+    }
+
+    /**
+     * @return bool
+     */
     public function isOpen()
     {
-        return $this->store->state($this->service) != CircuitState::Closed;
-    }
-
-    public function shouldBecomeHalfOpen(): bool
-    {
-        $lastChange = $this->store->lastChangedDateUtc($this->service);
-
-        if ($lastChange) {
-            $now = Carbon::now("UTC");
-
-            $shouldBeHalfOpenAt = Carbon::parse($lastChange)
-                ->timezone("UTC")
-                ->addSeconds($this->config->openToHalfOpenWaitTime);
-
-            return $shouldBeHalfOpenAt > $now;
-        }
-
-        return false;
-    }
-
-    public function handleFailure(\Exception $exception): void
-    {
-        // Log exception
-
-        $this->store->incrementFailure($exception, $this->service);
-
-        // Open circuit if needed
-        if ($this->store->counter($this->service)->getNumberOfFailures() > $this->config->maxNumberOfFailures) {
-            $this->openCircuit();
-        }
-    }
-
-    public function openCircuit(): void
-    {
-        $this->store->open($this->service);
-        $this->store->reset($this->service);
+        return $this->storage->getState() !== CircuitState::Closed;
     }
 }
