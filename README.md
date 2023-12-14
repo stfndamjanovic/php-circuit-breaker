@@ -22,16 +22,9 @@ use Stfn\CircuitBreaker\Storage\RedisStorage;
 use Redis;
 use Stfn\CircuitBreaker\Config;
 
-$redis = new Redis('127.0.0.1');
-$redis->connect();
+$breaker = new CircuitBreaker();
 
-$store = new RedisStorage($redis);
-
-$config = new Config("unique-service-name");
-
-$circuitBreaker = new CircuitBreaker($config, $store);
-
-$circuitBreaker->run(function () {
+$breaker->call(function () {
     // Your function that could fail
 });
 ```
