@@ -2,14 +2,12 @@
 
 namespace Stfn\CircuitBreaker\Tests;
 
-use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Config;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
-use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 use Stfn\CircuitBreaker\Storage\RedisStorage;
 
 class CircuitBreakerTest extends TestCase
@@ -65,7 +63,7 @@ class CircuitBreakerTest extends TestCase
     public function test_if_it_will_record_every_failure()
     {
         $config = Config::make([
-            'failure_threshold' => 4
+            'failure_threshold' => 4,
         ]);
 
         $breaker = new CircuitBreaker($config);
@@ -85,14 +83,14 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_open_circuit_after_failure_threshold()
     {
-        $config = Config::make( [
+        $config = Config::make([
             'failure_threshold' => 3,
         ]);
 
         $breaker = new CircuitBreaker($config);
 
         $fail = function () {
-          throw new \Exception();
+            throw new \Exception();
         };
 
         $tries = 4;
@@ -111,13 +109,13 @@ class CircuitBreakerTest extends TestCase
     public function test_if_counter_is_reset_after_circuit_change_state_from_close_to_open()
     {
         $config = Config::make([
-            'failure_threshold' => 3
+            'failure_threshold' => 3,
         ]);
 
         $breaker = new CircuitBreaker($config);
 
         $fail = function () {
-          throw new \Exception();
+            throw new \Exception();
         };
 
         $tries = 4;
@@ -139,7 +137,7 @@ class CircuitBreakerTest extends TestCase
         $breaker->storage->setState(CircuitState::HalfOpen);
 
         $success = function () {
-          return true;
+            return true;
         };
 
         $breaker->call($success);
@@ -154,7 +152,7 @@ class CircuitBreakerTest extends TestCase
         $breaker->storage->setState(CircuitState::HalfOpen);
 
         $fail = function () {
-          throw new \Exception();
+            throw new \Exception();
         };
 
         $this->expectException(CircuitHalfOpenFailException::class);
@@ -164,26 +162,26 @@ class CircuitBreakerTest extends TestCase
         $this->assertTrue($breaker->isOpen());
     }
 
-//    public function test_if_redis_work()
-//    {
-//        $redis = new \Redis();
-//        $redis->connect('127.0.0.1');
-//
-//        $store = new RedisStorage('test-service', $redis);
-//
-//        $config = Config::make([
-//            'recovery_time' => 60,
-//            'failure_threshold' => 3
-//        ]);
-//
-//        $breaker = new CircuitBreaker($config, $store);
-//
-//        $success = function () {
-//            return true;
-//        };
-//
-//        $result = $breaker->call($success);
-//
-//        dd($result);
-//    }
+    //    public function test_if_redis_work()
+    //    {
+    //        $redis = new \Redis();
+    //        $redis->connect('127.0.0.1');
+    //
+    //        $store = new RedisStorage('test-service', $redis);
+    //
+    //        $config = Config::make([
+    //            'recovery_time' => 60,
+    //            'failure_threshold' => 3
+    //        ]);
+    //
+    //        $breaker = new CircuitBreaker($config, $store);
+    //
+    //        $success = function () {
+    //            return true;
+    //        };
+    //
+    //        $result = $breaker->call($success);
+    //
+    //        dd($result);
+    //    }
 }

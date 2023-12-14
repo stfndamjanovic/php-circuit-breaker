@@ -6,10 +6,10 @@ use Stfn\CircuitBreaker\CircuitState;
 
 class RedisStorage extends CircuitBreakerStorage
 {
-    const BASE_NAMESPACE = "stfn_php_circuit_breaker";
-    const STATE_KEY = "state";
-    const FAIL_COUNT_KEY = "fail_count";
-    const OPENED_AT_KEY = "opened_at";
+    public const BASE_NAMESPACE = "stfn_php_circuit_breaker";
+    public const STATE_KEY = "state";
+    public const FAIL_COUNT_KEY = "fail_count";
+    public const OPENED_AT_KEY = "opened_at";
 
     /**
      * @var \Redis

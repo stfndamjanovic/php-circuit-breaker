@@ -54,10 +54,10 @@ class CircuitBreaker
         $map = [
             CircuitState::Closed->value => ClosedStateHandler::class,
             CircuitState::HalfOpen->value => HalfOpenStateHandler::class,
-            CircuitState::Open->value => OpenStateHandler::class
+            CircuitState::Open->value => OpenStateHandler::class,
         ];
 
-        if (!array_key_exists($state->value, $map)) {
+        if (! array_key_exists($state->value, $map)) {
             throw new \Exception("State {$state->value} is not valid");
         }
 
