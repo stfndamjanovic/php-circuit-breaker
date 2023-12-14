@@ -30,41 +30,41 @@ abstract class CircuitBreakerStorage
     /**
      * @return CircuitState
      */
-    public abstract function getState(): CircuitState;
+    abstract public function getState(): CircuitState;
 
     /**
      * @param CircuitState $state
      * @return void
      */
-    public abstract function setState(CircuitState $state): void;
+    abstract public function setState(CircuitState $state): void;
 
     /**
      * @return void
      */
-    public abstract function open(): void;
+    abstract public function open(): void;
 
     /**
      * @return void
      */
-    public abstract function close(): void;
+    abstract public function close(): void;
 
     /**
      * @return void
      */
-    public abstract function incrementFailure(): void;
+    abstract public function incrementFailure(): void;
 
     /**
      * @return void
      */
-    public abstract function resetCounter(): void;
+    abstract public function resetCounter(): void;
 
     /**
      * @return int
      */
-    public abstract function getFailuresCount(): int;
+    abstract public function getFailuresCount(): int;
 
     /**
      * @return int
      */
-    public abstract function openedAt(): int;
+    abstract public function openedAt(): int;
 }
