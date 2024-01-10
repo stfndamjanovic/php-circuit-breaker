@@ -17,16 +17,16 @@ composer require stfndamjanovic/php-circuit-breaker
 ## Usage
 
 ```php
-use Stfn\CircuitBreaker\CircuitBreaker;
-use Stfn\CircuitBreaker\Storage\RedisStorage;
-use Redis;
-use Stfn\CircuitBreaker\Config;
+use Stfn\CircuitBreaker\CircuitBreakerFactory;
 
-$breaker = new CircuitBreaker();
-
-$breaker->call(function () {
-    // Your function that could fail
-});
+$result = CircuitBreakerFactory::make()
+        ->for('test-service')
+        ->withOptions([
+            'recovery_time' => 30,
+            'failure_threshold' => 5
+        ])->call(function () {
+            // Your function that could fail
+        });
 ```
 
 ## Testing

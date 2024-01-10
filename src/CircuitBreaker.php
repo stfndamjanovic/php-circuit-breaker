@@ -2,6 +2,7 @@
 
 namespace Stfn\CircuitBreaker;
 
+use Stfn\CircuitBreaker\Exceptions\InvalidStateException;
 use Stfn\CircuitBreaker\StateHandlers\ClosedStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\HalfOpenStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\OpenStateHandler;
@@ -58,7 +59,7 @@ class CircuitBreaker
         ];
 
         if (! array_key_exists($state->value, $map)) {
-            throw new \Exception("State {$state->value} is not valid");
+            throw InvalidStateException::make($state->value);
         }
 
         return new $map[$state->value]($this);

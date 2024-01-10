@@ -28,6 +28,15 @@ abstract class CircuitBreakerStorage
     }
 
     /**
+     * @param string $service
+     * @return void
+     */
+    public function setService(string $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
      * @return CircuitState
      */
     abstract public function getState(): CircuitState;
