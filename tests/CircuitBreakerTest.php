@@ -4,7 +4,6 @@ namespace Stfn\CircuitBreaker\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
-use Stfn\CircuitBreaker\CircuitBreakerFactory;
 use Stfn\CircuitBreaker\CircuitBreakerListener;
 use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Config;
@@ -184,7 +183,7 @@ class CircuitBreakerTest extends TestCase
             }
         };
 
-        $factory = CircuitBreakerFactory::make()
+        $factory = CircuitBreaker::factory()
             ->withOptions(['failure_threshold' => 10])
             ->withListeners([$object]);
 
@@ -213,7 +212,7 @@ class CircuitBreakerTest extends TestCase
     {
         $testException = new class () extends \Exception {};
 
-        $factory = CircuitBreakerFactory::make()
+        $factory = CircuitBreaker::factory()
             ->skipFailure(function (\Exception $exception) use ($testException) {
                 return $exception instanceof $testException;
             });
@@ -222,12 +221,12 @@ class CircuitBreakerTest extends TestCase
             throw $testException;
         });
 
-        $this->assertEquals(0, $factory->circuitBreaker->storage->getFailuresCount());
+        $this->assertEquals(0, $factory->breaker->storage->getFailuresCount());
     }
 
     public function test_if_it_can_fail_even_without_exception()
     {
-        $factory = CircuitBreakerFactory::make()
+        $factory = CircuitBreaker::factory()
             ->failWhen(function ($result) {
                 if ($result instanceof \stdClass) {
                     throw new \Exception();
@@ -240,7 +239,7 @@ class CircuitBreakerTest extends TestCase
 
         }
 
-        $this->assertEquals(1, $factory->circuitBreaker->storage->getFailuresCount());
+        $this->assertEquals(1, $factory->breaker->storage->getFailuresCount());
     }
 
     //    public function test_if_redis_work()

@@ -17,10 +17,10 @@ composer require stfndamjanovic/php-circuit-breaker
 ## Usage
 
 ```php
-use Stfn\CircuitBreaker\CircuitBreakerFactory;
+use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 
-$factory = CircuitBreakerFactory::make()
+$factory = CircuitBreaker::factory()
         ->for('3rd-party-api')
         ->failWhen(function ($result) {
             if ($result->status > 400) {

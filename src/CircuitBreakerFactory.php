@@ -6,26 +6,23 @@ use Stfn\CircuitBreaker\Storage\CircuitBreakerStorage;
 
 class CircuitBreakerFactory
 {
-    public CircuitBreaker $circuitBreaker;
+    public CircuitBreaker $breaker;
 
-    public static function make()
+    public function __construct(CircuitBreaker $breaker)
     {
-        $object = new self();
-        $object->circuitBreaker = new CircuitBreaker();
-
-        return $object;
+        $this->breaker = $breaker;
     }
 
     public function for(string $service)
     {
-        $this->circuitBreaker->storage->setService($service);
+        $this->breaker->storage->setService($service);
 
         return $this;
     }
 
     public function withOptions(array $options): self
     {
-        $this->circuitBreaker->config = Config::make($options);
+        $this->breaker->config = Config::make($options);
 
         return $this;
     }
@@ -33,7 +30,7 @@ class CircuitBreakerFactory
     public function withListeners(array $listeners): self
     {
         foreach ($listeners as $listener) {
-            $this->circuitBreaker->addListener($listener);
+            $this->breaker->addListener($listener);
         }
 
         return $this;
@@ -41,27 +38,27 @@ class CircuitBreakerFactory
 
     public function skipFailure(\Closure $closure)
     {
-        $this->circuitBreaker->skipFailureCallback = $closure;
+        $this->breaker->skipFailureCallback = $closure;
 
         return $this;
     }
 
     public function failWhen(\Closure $closure)
     {
-        $this->circuitBreaker->failWhenCallback = $closure;
+        $this->breaker->failWhenCallback = $closure;
 
         return $this;
     }
 
     public function storage(CircuitBreakerStorage $storage)
     {
-        $this->circuitBreaker->storage = $storage;
+        $this->breaker->storage = $storage;
 
         return $this;
     }
 
     public function call(\Closure $action, ...$args)
     {
-        return $this->circuitBreaker->call($action, $args);
+        return $this->breaker->call($action, $args);
     }
 }

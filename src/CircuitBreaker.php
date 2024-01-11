@@ -114,4 +114,12 @@ class CircuitBreaker
     {
         $this->listeners[] = $listener;
     }
+
+    /**
+     * @return CircuitBreakerFactory
+     */
+    public static function factory()
+    {
+        return new CircuitBreakerFactory(new self());
+    }
 }
