@@ -17,21 +17,15 @@ class RedisStorage extends CircuitBreakerStorage
     protected \Redis $redis;
 
     /**
-     * @var
-     */
-    protected string $namespace;
-
-    /**
      * @param string $service
      * @param \Redis $redis
      * @throws \RedisException
      */
-    public function __construct(string $namespace, string $service, \Redis $redis)
+    public function __construct(\Redis $redis, string $service)
     {
         parent::__construct($service);
 
         $this->redis = $redis;
-        $this->namespace = $namespace;
 
         $this->initState();
     }
@@ -109,7 +103,7 @@ class RedisStorage extends CircuitBreakerStorage
      */
     protected function getNamespace(string $key): string
     {
-        $tags = [self::BASE_NAMESPACE, $this->namespace, $this->service, $key];
+        $tags = [self::BASE_NAMESPACE, $this->service, $key];
 
         return join(":", $tags);
     }

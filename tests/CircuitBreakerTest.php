@@ -4,11 +4,12 @@ namespace Stfn\CircuitBreaker\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
+use Stfn\CircuitBreaker\CircuitBreakerFactory;
+use Stfn\CircuitBreaker\CircuitBreakerListener;
 use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Config;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
-use Stfn\CircuitBreaker\Storage\RedisStorage;
 
 class CircuitBreakerTest extends TestCase
 {
@@ -75,7 +76,11 @@ class CircuitBreakerTest extends TestCase
         $tries = 3;
 
         foreach (range(1, $tries) as $i) {
-            $breaker->call($fail);
+            try {
+                $breaker->call($fail);
+            } catch (\Exception) {
+
+            }
         }
 
         $this->assertEquals($tries, $breaker->storage->getFailuresCount());
@@ -160,6 +165,82 @@ class CircuitBreakerTest extends TestCase
         $breaker->call($fail);
 
         $this->assertTrue($breaker->isOpen());
+    }
+
+    public function test_if_listener_is_called()
+    {
+        $object = new class extends CircuitBreakerListener {
+            public int $successCount = 0;
+            public int $failCount = 0;
+
+            public function onSuccess($result): void
+            {
+                $this->successCount++;
+            }
+
+            public function onFail($exception): void
+            {
+                $this->failCount++;
+            }
+        };
+
+        $factory = CircuitBreakerFactory::make()
+            ->withOptions(['failure_threshold' => 10])
+            ->withListeners([$object]);
+
+        $success = function () {
+            return true;
+        };
+
+        $fail = function () {
+            throw new \Exception();
+        };
+
+        $factory->call($success);
+        $factory->call($success);
+
+        try {
+            $factory->call($fail);
+        } catch (\Exception) {
+
+        }
+
+        $this->assertEquals(2, $object->successCount);
+        $this->assertEquals(1, $object->failCount);
+    }
+
+    public function test_if_it_can_skip_some_exception()
+    {
+        $testException = new class extends \Exception {};
+
+        $factory = CircuitBreakerFactory::make()
+            ->skipFailure(function (\Exception $exception) use ($testException) {
+                return $exception instanceof $testException;
+            });
+
+        $factory->call(function () use ($testException) {
+            throw $testException;
+        });
+
+        $this->assertEquals(0, $factory->circuitBreaker->storage->getFailuresCount());
+    }
+
+    public function test_if_it_can_fail_even_without_exception()
+    {
+        $factory = CircuitBreakerFactory::make()
+            ->failWhen(function ($result) {
+                if ($result instanceof \stdClass) {
+                    throw new \Exception();
+                }
+            });
+
+        try {
+            $factory->call(fn() => new \stdClass());
+        } catch (\Exception) {
+
+        }
+
+        $this->assertEquals(1, $factory->circuitBreaker->storage->getFailuresCount());
     }
 
     //    public function test_if_redis_work()

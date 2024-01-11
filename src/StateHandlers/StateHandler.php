@@ -33,7 +33,7 @@ class StateHandler
         try {
             $result = call_user_func($action, $args);
 
-            $this->handleSucess();
+            $this->handleSucess($result);
         } catch (\Exception $exception) {
             $this->handleFailure($exception);
         }
@@ -53,21 +53,42 @@ class StateHandler
 
     /**
      * @param \Exception $exception
-     * @return void
+     * @return mixed
+     * @throws \Exception
      */
     public function handleFailure(\Exception $exception)
     {
-        //@ToDO Add listeners here
+        if (is_callable($this->breaker->skipFailureCallback)) {
+            $shouldSkip = call_user_func($this->breaker->skipFailureCallback, $exception);
+
+            if ($shouldSkip) {
+                return;
+            }
+        }
+
+        foreach ($this->breaker->listeners as $listener) {
+            $listener->onFail($exception);
+        }
+
         $this->onFailure($exception);
+
+        throw $exception;
     }
 
     /**
      * @return void
      */
-    public function handleSucess()
+    public function handleSucess($result)
     {
-        // @ToDo Add listeners here
+        if (is_callable($this->breaker->failWhenCallback)) {
+            call_user_func($this->breaker->failWhenCallback, $result);
+        }
+
         $this->onSucess();
+
+        foreach ($this->breaker->listeners as $listener) {
+            $listener->onSuccess($result);
+        }
     }
 
     /**

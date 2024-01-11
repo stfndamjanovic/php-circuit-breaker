@@ -6,6 +6,7 @@ use Stfn\CircuitBreaker\Exceptions\InvalidStateException;
 use Stfn\CircuitBreaker\StateHandlers\ClosedStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\HalfOpenStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\OpenStateHandler;
+use Stfn\CircuitBreaker\StateHandlers\StateHandler;
 use Stfn\CircuitBreaker\Storage\CircuitBreakerStorage;
 use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 
@@ -20,6 +21,21 @@ class CircuitBreaker
      * @var CircuitBreakerStorage
      */
     public CircuitBreakerStorage $storage;
+
+    /**
+     * @var CircuitBreakerListener[]
+     */
+    public array $listeners = [];
+
+    /**
+     * @var \Closure|null
+     */
+    public \Closure|null $failWhenCallback = null;
+
+    /**
+     * @var \Closure|null
+     */
+    public \Closure|null $skipFailureCallback = null;
 
     /**
      * @param Config|null $config
@@ -39,6 +55,7 @@ class CircuitBreaker
      */
     public function call(\Closure $action, ...$args)
     {
+        /** @var StateHandler $stateHandler */
         $stateHandler = $this->makeStateHandler();
 
         return $stateHandler->call($action, $args);
@@ -87,5 +104,14 @@ class CircuitBreaker
     public function isOpen()
     {
         return $this->storage->getState() !== CircuitState::Closed;
+    }
+
+    /**
+     * @param CircuitBreakerListener $listener
+     * @return void
+     */
+    public function addListener(CircuitBreakerListener $listener)
+    {
+        $this->listeners[] = $listener;
     }
 }

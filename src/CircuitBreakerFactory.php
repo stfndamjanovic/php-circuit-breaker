@@ -6,7 +6,7 @@ use Stfn\CircuitBreaker\Storage\CircuitBreakerStorage;
 
 class CircuitBreakerFactory
 {
-    protected CircuitBreaker $circuitBreaker;
+    public CircuitBreaker $circuitBreaker;
 
     public static function make()
     {
@@ -23,9 +23,32 @@ class CircuitBreakerFactory
         return $this;
     }
 
-    public function withOptions(array $options)
+    public function withOptions(array $options): self
     {
         $this->circuitBreaker->config = Config::make($options);
+
+        return $this;
+    }
+
+    public function withListeners(array $listeners): self
+    {
+        foreach ($listeners as $listener) {
+            $this->circuitBreaker->addListener($listener);
+        }
+
+        return $this;
+    }
+
+    public function skipFailure(\Closure $closure)
+    {
+        $this->circuitBreaker->skipFailureCallback = $closure;
+
+        return $this;
+    }
+
+    public function failWhen(\Closure $closure)
+    {
+        $this->circuitBreaker->failWhenCallback = $closure;
 
         return $this;
     }

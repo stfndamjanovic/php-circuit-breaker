@@ -18,9 +18,18 @@ composer require stfndamjanovic/php-circuit-breaker
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreakerFactory;
+use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 
 $result = CircuitBreakerFactory::make()
         ->for('test-service')
+        ->failWhen(function ($result) {
+            if ($result->status > 400) {
+                throw new Exception();
+            }
+        })
+        ->skipFailure(function (Exception $exception) {
+            return $exception instanceof CircuitHalfOpenFailException;
+        })
         ->withOptions([
             'recovery_time' => 30,
             'failure_threshold' => 5
