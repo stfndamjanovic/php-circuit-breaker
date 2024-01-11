@@ -169,7 +169,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_listener_is_called()
     {
-        $object = new class extends CircuitBreakerListener {
+        $object = new class () extends CircuitBreakerListener {
             public int $successCount = 0;
             public int $failCount = 0;
 
@@ -211,7 +211,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_can_skip_some_exception()
     {
-        $testException = new class extends \Exception {};
+        $testException = new class () extends \Exception {};
 
         $factory = CircuitBreakerFactory::make()
             ->skipFailure(function (\Exception $exception) use ($testException) {
@@ -235,7 +235,7 @@ class CircuitBreakerTest extends TestCase
             });
 
         try {
-            $factory->call(fn() => new \stdClass());
+            $factory->call(fn () => new \stdClass());
         } catch (\Exception) {
 
         }
