@@ -4,7 +4,6 @@ namespace Stfn\CircuitBreaker\StateHandlers;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\Exceptions\FailOnSuccessException;
-use Stfn\CircuitBreaker\Exceptions\FailWithoutException;
 
 class StateHandler
 {
