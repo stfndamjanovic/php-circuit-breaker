@@ -18,23 +18,10 @@ composer require stfndamjanovic/php-circuit-breaker
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
-use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 
-$factory = CircuitBreaker::for('3rd-party-service')
-        ->failWhen(function ($result) {
-            return $result->status > 400;
-        })
-        ->skipFailure(function (Exception $exception) {
-            return $exception instanceof CircuitHalfOpenFailException;
-        })
-        ->withOptions([
-            'recovery_time' => 30,
-            'failure_threshold' => 5
-        ]);
-        
-$result = $factory->call(function () {
+$result = CircuitBreaker::for('3rd-party-service')->call(function () {
     // Your function that could fail
-})
+});
 ```
 
 ## Testing
