@@ -27,6 +27,6 @@ class OpenStateHandler extends StateHandler
             return;
         }
 
-        throw CircuitOpenException::make($storage->getService());
+        throw CircuitOpenException::make($this->breaker->name);
     }
 }

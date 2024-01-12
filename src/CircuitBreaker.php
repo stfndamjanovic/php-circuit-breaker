@@ -12,6 +12,7 @@ use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 
 class CircuitBreaker
 {
+    public string $name;
     /**
      * @var Config
      */
@@ -41,8 +42,9 @@ class CircuitBreaker
      * @param Config|null $config
      * @param CircuitBreakerStorage|null $storage
      */
-    public function __construct(Config $config = null, CircuitBreakerStorage $storage = null)
+    public function __construct(string $name, Config $config = null, CircuitBreakerStorage $storage = null)
     {
+        $this->name = $name;
         $this->config = $config ?: new Config();
         $this->storage = $storage ?: new InMemoryStorage();
     }
@@ -55,6 +57,8 @@ class CircuitBreaker
      */
     public function call(\Closure $action, ...$args)
     {
+        $this->storage->init($this->name);
+
         /** @var StateHandler $stateHandler */
         $stateHandler = $this->makeStateHandler();
 
@@ -116,10 +120,11 @@ class CircuitBreaker
     }
 
     /**
+     * @param string $service
      * @return CircuitBreakerFactory
      */
-    public static function factory()
+    public static function for(string $service)
     {
-        return new CircuitBreakerFactory(new self());
+        return new CircuitBreakerFactory(new self($service));
     }
 }

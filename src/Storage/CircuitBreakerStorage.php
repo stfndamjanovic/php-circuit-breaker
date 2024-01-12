@@ -9,15 +9,7 @@ abstract class CircuitBreakerStorage
     /**
      * @var string
      */
-    protected string $service;
-
-    /**
-     * @param string $service
-     */
-    public function __construct(string $service)
-    {
-        $this->service = $service;
-    }
+    protected string $service = '';
 
     /**
      * @return string
@@ -25,15 +17,6 @@ abstract class CircuitBreakerStorage
     public function getService(): string
     {
         return $this->service;
-    }
-
-    /**
-     * @param string $service
-     * @return void
-     */
-    public function setService(string $service)
-    {
-        $this->service = $service;
     }
 
     /**
@@ -46,6 +29,15 @@ abstract class CircuitBreakerStorage
      * @return void
      */
     abstract public function setState(CircuitState $state): void;
+
+    /**
+     * @param string $service
+     * @return void
+     */
+    public function init(string $service): void
+    {
+
+    }
 
     /**
      * @return void

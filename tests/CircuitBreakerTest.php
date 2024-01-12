@@ -6,7 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitBreakerListener;
 use Stfn\CircuitBreaker\CircuitState;
-use Stfn\CircuitBreaker\Config;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 
@@ -14,7 +13,7 @@ class CircuitBreakerTest extends TestCase
 {
     public function test_if_it_can_handle_function_success()
     {
-        $breaker = new CircuitBreaker();
+        $breaker = CircuitBreaker::for('test-service')->getCircuitBreaker();
 
         $result = $breaker->call(function () {
             return true;
@@ -33,7 +32,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_throw_an_exception_if_circuit_breaker_is_open()
     {
-        $breaker = new CircuitBreaker();
+        $breaker = CircuitBreaker::for('test-service')->getCircuitBreaker();
         $breaker->openCircuit();
 
         $this->expectException(CircuitOpenException::class);
@@ -45,7 +44,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_record_every_success()
     {
-        $breaker = new CircuitBreaker();
+        $breaker = CircuitBreaker::for('test-service')->getCircuitBreaker();
 
         $success = function () {
             return true;
@@ -62,11 +61,9 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_record_every_failure()
     {
-        $config = Config::make([
-            'failure_threshold' => 4,
-        ]);
-
-        $breaker = new CircuitBreaker($config);
+        $breaker = CircuitBreaker::for('test-service')
+            ->withOptions(['failure_threshold' => 4])
+            ->getCircuitBreaker();
 
         $fail = function () {
             throw new \Exception("test");
@@ -87,11 +84,9 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_open_circuit_after_failure_threshold()
     {
-        $config = Config::make([
-            'failure_threshold' => 3,
-        ]);
-
-        $breaker = new CircuitBreaker($config);
+        $breaker = CircuitBreaker::for('test-service')
+            ->withOptions(['failure_threshold' => 3])
+            ->getCircuitBreaker();
 
         $fail = function () {
             throw new \Exception();
@@ -102,7 +97,7 @@ class CircuitBreakerTest extends TestCase
         foreach (range(1, $tries) as $i) {
             try {
                 $breaker->call($fail);
-            } catch (\Exception $exception) {
+            } catch (\Exception) {
 
             }
         }
@@ -112,11 +107,9 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_counter_is_reset_after_circuit_change_state_from_close_to_open()
     {
-        $config = Config::make([
-            'failure_threshold' => 3,
-        ]);
-
-        $breaker = new CircuitBreaker($config);
+        $breaker = CircuitBreaker::for('test-service')
+            ->withOptions(['failure_threshold' => 3])
+            ->getCircuitBreaker();
 
         $fail = function () {
             throw new \Exception();
@@ -127,7 +120,7 @@ class CircuitBreakerTest extends TestCase
         foreach (range(1, $tries) as $i) {
             try {
                 $breaker->call($fail);
-            } catch (\Exception $exception) {
+            } catch (\Exception) {
 
             }
         }
@@ -137,7 +130,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_close_circuit_after_success_call()
     {
-        $breaker = new CircuitBreaker();
+        $breaker = CircuitBreaker::for('test-service')->getCircuitBreaker();
         $breaker->storage->setState(CircuitState::HalfOpen);
 
         $success = function () {
@@ -151,7 +144,7 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_will_transit_back_to_open_state_after_first_fail()
     {
-        $breaker = new CircuitBreaker();
+        $breaker = CircuitBreaker::for('test-service')->getCircuitBreaker();
 
         $breaker->storage->setState(CircuitState::HalfOpen);
 
@@ -183,7 +176,7 @@ class CircuitBreakerTest extends TestCase
             }
         };
 
-        $factory = CircuitBreaker::factory()
+        $factory = CircuitBreaker::for('test-service')
             ->withOptions(['failure_threshold' => 10])
             ->withListeners([$object]);
 
@@ -212,7 +205,7 @@ class CircuitBreakerTest extends TestCase
     {
         $testException = new class () extends \Exception {};
 
-        $factory = CircuitBreaker::factory()
+        $factory = CircuitBreaker::for('test-service')
             ->skipFailure(function (\Exception $exception) use ($testException) {
                 return $exception instanceof $testException;
             });
@@ -226,20 +219,23 @@ class CircuitBreakerTest extends TestCase
 
     public function test_if_it_can_fail_even_without_exception()
     {
-        $factory = CircuitBreaker::factory()
+        $factory = CircuitBreaker::for('test-service')
+            ->withOptions(['failure_threshold' => 2])
             ->failWhen(function ($result) {
-                if ($result instanceof \stdClass) {
-                    throw new \Exception();
-                }
+                return $result instanceof \stdClass;
             });
 
-        try {
-            $factory->call(fn () => new \stdClass());
-        } catch (\Exception) {
+        foreach (range(1, 3) as $i) {
+            try {
+                $factory->call(fn () => new \stdClass());
+            } catch (\Exception) {
 
+            }
         }
 
-        $this->assertEquals(1, $factory->breaker->storage->getFailuresCount());
+        // Make sure that number of failures is reset to zero
+        $this->assertEquals(0, $factory->breaker->storage->getFailuresCount());
+        $this->assertTrue($factory->breaker->isOpen());
     }
 
     //    public function test_if_redis_work()

@@ -19,17 +19,7 @@ class InMemoryStorage extends CircuitBreakerStorage
     /**
      * @var int|null
      */
-    protected null|int $openedAt;
-
-    /**
-     *
-     */
-    public function __construct()
-    {
-        parent::__construct("in_memory");
-
-        $this->openedAt = null;
-    }
+    protected null|int $openedAt = null;
 
     /**
      * @return CircuitState

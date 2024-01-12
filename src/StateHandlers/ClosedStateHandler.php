@@ -22,7 +22,7 @@ class ClosedStateHandler extends StateHandler
         if ($failuresCount >= $this->breaker->config->failureThreshold) {
             $this->breaker->openCircuit();
 
-            throw CircuitOpenException::make($storage->getService());
+            throw CircuitOpenException::make($this->breaker->name);
         }
     }
 }

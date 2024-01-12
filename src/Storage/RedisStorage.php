@@ -21,21 +21,20 @@ class RedisStorage extends CircuitBreakerStorage
      * @param \Redis $redis
      * @throws \RedisException
      */
-    public function __construct(\Redis $redis, string $service)
+    public function __construct(\Redis $redis)
     {
-        parent::__construct($service);
-
         $this->redis = $redis;
-
-        $this->initState();
     }
 
     /**
+     * @param string $service
      * @return void
      * @throws \RedisException
      */
-    protected function initState()
+    public function init(string $service): void
     {
+        $this->service = $service;
+
         $this->redis->setnx($this->getNamespace(self::STATE_KEY), CircuitState::Closed->value);
         $this->redis->setnx($this->getNamespace(self::FAIL_COUNT_KEY), 0);
     }

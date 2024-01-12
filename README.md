@@ -20,12 +20,9 @@ composer require stfndamjanovic/php-circuit-breaker
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 
-$factory = CircuitBreaker::factory()
-        ->for('3rd-party-api')
+$factory = CircuitBreaker::for('3rd-party-service')
         ->failWhen(function ($result) {
-            if ($result->status > 400) {
-                throw new Exception();
-            }
+            return $result->status > 400;
         })
         ->skipFailure(function (Exception $exception) {
             return $exception instanceof CircuitHalfOpenFailException;

@@ -15,7 +15,7 @@ class CircuitBreakerFactory
 
     public function for(string $service)
     {
-        $this->breaker->storage->setService($service);
+        $this->breaker->config->name = $service;
 
         return $this;
     }
@@ -60,5 +60,10 @@ class CircuitBreakerFactory
     public function call(\Closure $action, ...$args)
     {
         return $this->breaker->call($action, $args);
+    }
+
+    public function getCircuitBreaker()
+    {
+        return $this->breaker;
     }
 }

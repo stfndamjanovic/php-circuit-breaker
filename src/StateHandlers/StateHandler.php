@@ -3,6 +3,8 @@
 namespace Stfn\CircuitBreaker\StateHandlers;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
+use Stfn\CircuitBreaker\Exceptions\FailOnSuccessException;
+use Stfn\CircuitBreaker\Exceptions\FailWithoutException;
 
 class StateHandler
 {
@@ -76,12 +78,18 @@ class StateHandler
     }
 
     /**
+     * @param $result
      * @return void
+     * @throws FailOnSuccessException
      */
     public function handleSucess($result)
     {
         if (is_callable($this->breaker->failWhenCallback)) {
-            call_user_func($this->breaker->failWhenCallback, $result);
+            $shouldFail = call_user_func($this->breaker->failWhenCallback, $result);
+
+            if ($shouldFail) {
+                throw FailOnSuccessException::make();
+            }
         }
 
         $this->onSucess();
