@@ -87,7 +87,7 @@ You can add listeners for circuit breaker actions by extending the CircuitBreake
 ```php
 use Stfn\CircuitBreaker\CircuitBreakerListener;
 
-class Logger extends CircuitBreakerListener
+class LoggerListener extends CircuitBreakerListener
 {
     public function onSuccess($result): void
     {
@@ -106,10 +106,8 @@ Attach the listener to the circuit breaker:
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
 
-$loggerListener = new Logger();
-
 $breaker = CircuitBreaker::for('test-service')
-    ->listeners([$loggerListener]);
+    ->listeners([new LoggerListener()]);
 ```
 
 ## Testing
