@@ -69,12 +69,12 @@ You can configure the circuit breaker to fail based on specific conditions or to
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
 
-$breaker = CircuitBreaker::for('test-service')
+$breaker = CircuitBreaker::for('3rd-party-service')
     ->failWhen(function ($result) {
         return $result->status() >= 400;
     });
 
-$breaker = CircuitBreaker::for('test-service')
+$breaker = CircuitBreaker::for('3rd-party-service')
     ->skipFailure(function ($exception) {
         return $exception instanceof HttpException;
     });
@@ -106,7 +106,7 @@ Attach the listener to the circuit breaker:
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
 
-$breaker = CircuitBreaker::for('test-service')
+$breaker = CircuitBreaker::for('3rd-party-service')
     ->listeners([new LoggerListener()]);
 ```
 
