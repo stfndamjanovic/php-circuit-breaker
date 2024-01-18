@@ -23,7 +23,7 @@ class RedisStorage extends CircuitBreakerStorage
      */
     public function __construct(\Redis $redis)
     {
-        if (!extension_loaded('redis')) {
+        if (! extension_loaded('redis')) {
             throw new \Exception("PHP Redis extension must be loaded.");
         }
 
