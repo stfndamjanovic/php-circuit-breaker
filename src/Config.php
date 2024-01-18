@@ -45,7 +45,7 @@ class Config
     {
         return [
             'failure_threshold' => $this->failureThreshold,
-            'recovery_time' => $this->recoveryTime
+            'recovery_time' => $this->recoveryTime,
         ];
     }
 }
