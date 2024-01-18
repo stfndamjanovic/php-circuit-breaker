@@ -1,10 +1,9 @@
 # Circuit breaker in PHP
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/stfndamjanovic/circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfndamjanovic/circuit-breaker)
-[![Tests](https://img.shields.io/github/actions/workflow/status/stfndamjanovic/circuit-breaker/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/stfndamjanovic/circuit-breaker/actions/workflows/run-tests.yml)
-[![Total Downloads](https://img.shields.io/packagist/dt/stfndamjanovic/circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfndamjanovic/circuit-breaker)
 
-This is implementation of circuit breaker in PHP.
+This package provides an implementation of the circuit breaker pattern in PHP. 
+You can find more info about it [here](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker).
 
 ## Installation
 
@@ -26,11 +25,13 @@ $result = CircuitBreaker::for('3rd-party-service')->call(function () {
 
 ### Storage
 
-By default circuit breaker will use `InMemoryStorage` as a storage driver, which is not so useful if your app is stateless.
+By default, the circuit breaker uses `InMemoryStorage` as a storage driver, which might not be suitable for stateless applications.
 
 More useful would be to use `RedisStorage`.
+
 ```php
 use Stfn\CircuitBreaker\Storage\RedisStorage;
+use Stfn\CircuitBreaker\CircuitBreaker;
 
 $redis = new \Redis();
 $redis->connect("127.0.0.1");
@@ -44,10 +45,14 @@ $result = CircuitBreaker::for('3rd-party-service')
     });
 ```
 
-### Config
+You could also write your implementation of storage. You should just implement `CircuitBreakerStorage` interface.
 
-Every circuit breaker has its own default config. You can always change it to fit your needs.
+### Configuration
+
+Each circuit breaker has default configuration settings, but you can customize them to fit your needs:
 ```php
+use Stfn\CircuitBreaker\CircuitBreaker;
+
 $breaker = CircuitBreaker::for('3rd-party-service')
     ->withOptions([
         'failure_threshold' => 10,
@@ -57,18 +62,16 @@ $breaker = CircuitBreaker::for('3rd-party-service')
 
 ### Middlewares
 
-You can set circuit breaker to fail even if function call didn't throw an exception.
+You can configure the circuit breaker to fail based on specific conditions or to skip certain types of failures:
 
 ```php
+use Stfn\CircuitBreaker\CircuitBreaker;
+
 $breaker = CircuitBreaker::for('test-service')
     ->failWhen(function ($result) {
         return $result->status() >= 400;
     });
-```
 
-Or you want to avoid some type of failures.
-
-```php
 $breaker = CircuitBreaker::for('test-service')
     ->skipFailure(function ($exception) {
         return $exception instanceof HttpException;
@@ -77,7 +80,7 @@ $breaker = CircuitBreaker::for('test-service')
 
 ### Listeners
 
-You can add listeners for circuit breaker actions. In order to do that, you should extend `CircuitBreakerListener` class.
+You can add listeners for circuit breaker actions by extending the CircuitBreakerListener class:
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreakerListener;
@@ -86,19 +89,21 @@ class Logger extends CircuitBreakerListener
 {
     public function onSuccess($result): void
     {
-      Log::info($result);
+        Log::info($result);
     }
-    
+
     public function onFail($exception) : void
     {
-      Log::info($exception);
+        Log::info($exception);
     }
 }
 ```
 
-And after that you can attach that listener to circuit breaker.
+Attach the listener to the circuit breaker:
 
 ```php
+use Stfn\CircuitBreaker\CircuitBreaker;
+
 $loggerListener = new Logger();
 
 $breaker = CircuitBreaker::for('test-service')
@@ -110,23 +115,6 @@ $breaker = CircuitBreaker::for('test-service')
 ```bash
 composer test
 ```
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](https://github.com/spatie/.github/blob/main/CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [Stefan Damjanovic](https://github.com/stfndamjanovic)
-- [All Contributors](../../contributors)
 
 ## License
 
