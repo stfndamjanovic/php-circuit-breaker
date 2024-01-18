@@ -25,7 +25,7 @@ $result = CircuitBreaker::for('3rd-party-service')->call(function () {
 
 ### Storage
 
-By default, the circuit breaker uses `InMemoryStorage` as a storage driver, which might not be suitable for stateless applications.
+By default, the circuit breaker uses `InMemoryStorage` as a storage driver, which is not suitable for most of PHP applications.
 
 More useful would be to use `RedisStorage`.
 
