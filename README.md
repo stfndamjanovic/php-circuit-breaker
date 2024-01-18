@@ -52,8 +52,7 @@ $result = CircuitBreaker::for('3rd-party-service')
     ->withOptions([
         'failure_threshold' => 10,
         'recovery_time' => 120
-    ])
-    ->call(function () {
+    ])->call(function () {
         // Your function that could fail
     });
 ```
@@ -65,7 +64,9 @@ You can set circuit breaker to fail even if function call didn't throw an except
 ```php
 $breaker = CircuitBreaker::for('test-service')
     ->failWhen(function ($result) {
-        return $result->status() > 400;
+        return $result->status() >= 400;
+    })->call(function () {
+        // Your function that could fail
     });
 ```
 
@@ -75,6 +76,8 @@ Or you want to avoid some type of failures.
 $breaker = CircuitBreaker::for('test-service')
     ->skipFailure(function ($exception) {
         return $exception instanceof HttpException;
+    })->call(function () {
+        // Your function that could fail
     });
 ```
 
