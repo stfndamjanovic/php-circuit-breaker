@@ -15,6 +15,8 @@ composer require stfndamjanovic/php-circuit-breaker
 
 ## Usage
 
+Wrap your potentially error-prone function with the circuit breaker, and it will monitor and handle failures gracefully. The circuit breaker tracks the occurrence of exceptions and takes preventive measures, such as opening the circuit, if failures become too frequent. During the circuit open state, calls to the function are temporarily halted, allowing the system to recover. You have the flexibility to configure the timespan for which the circuit remains open which we will explain later.
+
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
 
