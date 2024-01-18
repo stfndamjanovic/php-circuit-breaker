@@ -77,6 +77,34 @@ $breaker = CircuitBreaker::for('test-service')
 
 ### Listeners
 
+You can add listeners for circuit breaker actions. In order to do that, you should extend `CircuitBreakerListener` class.
+
+```php
+use Stfn\CircuitBreaker\CircuitBreakerListener;
+
+class Logger extends CircuitBreakerListener
+{
+    public function onSuccess($result): void
+    {
+      Log::info($result);
+    }
+    
+    public function onFail($exception) : void
+    {
+      Log::info($exception);
+    }
+}
+```
+
+And after that you can attach that listener to circuit breaker.
+
+```php
+$loggerListener = new Logger();
+
+$breaker = CircuitBreaker::for('test-service')
+    ->listeners([$loggerListener]);
+```
+
 ## Testing
 
 ```bash
