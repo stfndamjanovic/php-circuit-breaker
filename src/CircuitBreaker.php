@@ -137,7 +137,7 @@ class CircuitBreaker
      */
     public function withOptions(array $options): self
     {
-        $this->config = Config::make($options);
+        $this->config = Config::fromArray($options);
 
         return $this;
     }

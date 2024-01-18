@@ -7,16 +7,12 @@ use Stfn\CircuitBreaker\CircuitState;
 abstract class CircuitBreakerStorage
 {
     /**
-     * @var string
+     * @param string $service
+     * @return void
      */
-    protected string $service = '';
-
-    /**
-     * @return string
-     */
-    public function getService(): string
+    public function init(string $service): void
     {
-        return $this->service;
+
     }
 
     /**
@@ -29,15 +25,6 @@ abstract class CircuitBreakerStorage
      * @return void
      */
     abstract public function setState(CircuitState $state): void;
-
-    /**
-     * @param string $service
-     * @return void
-     */
-    public function init(string $service): void
-    {
-
-    }
 
     /**
      * @return void

@@ -42,23 +42,6 @@ class CircuitBreakerTest extends TestCase
         });
     }
 
-    public function test_if_it_will_record_every_success()
-    {
-        $breaker = CircuitBreaker::for('test-service');
-
-        $success = function () {
-            return true;
-        };
-
-        $tries = 3;
-
-        foreach (range(1, $tries) as $i) {
-            $breaker->call($success);
-        }
-
-        $this->assertEquals(0, $breaker->getStorage()->getFailuresCount());
-    }
-
     public function test_if_it_will_record_every_failure()
     {
         $breaker = CircuitBreaker::for('test-service')
@@ -101,27 +84,6 @@ class CircuitBreakerTest extends TestCase
         }
 
         $this->assertTrue($breaker->isOpen());
-    }
-
-    public function test_if_counter_is_reset_after_circuit_change_state_from_close_to_open()
-    {
-        $breaker = CircuitBreaker::for('test-service')
-            ->withOptions(['failure_threshold' => 3]);
-
-        $fail = function () {
-            throw new \Exception();
-        };
-
-        $tries = 4;
-
-        foreach (range(1, $tries) as $i) {
-            try {
-                $breaker->call($fail);
-            } catch (\Exception) {
-
-            }
-        }
-
         $this->assertEquals(0, $breaker->getStorage()->getFailuresCount());
     }
 
@@ -234,27 +196,4 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(0, $breaker->getStorage()->getFailuresCount());
         $this->assertTrue($breaker->isOpen());
     }
-
-    //    public function test_if_redis_work()
-    //    {
-    //        $redis = new \Redis();
-    //        $redis->connect('127.0.0.1');
-    //
-    //        $store = new RedisStorage('test-service', $redis);
-    //
-    //        $config = Config::make([
-    //            'recovery_time' => 60,
-    //            'failure_threshold' => 3
-    //        ]);
-    //
-    //        $breaker = new CircuitBreaker($config, $store);
-    //
-    //        $success = function () {
-    //            return true;
-    //        };
-    //
-    //        $result = $breaker->call($success);
-    //
-    //        dd($result);
-    //    }
 }

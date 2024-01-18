@@ -1,9 +1,9 @@
 {
     "name": "stfn/circuit-breaker",
-    "description": "This is my package circuit-breaker",
+    "description": "This is circuit-breaker pattern implemented in PHP",
     "keywords": [
         "stfndamjanovic",
-        "circuit-breaker"
+        "circuit-breaker-php"
     ],
     "homepage": "https://github.com/stfndamjanovic/circuit-breaker",
     "license": "MIT",
@@ -19,8 +19,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^10.3.2",
-        "friendsofphp/php-cs-fixer": "^3.21.1",
-        "spatie/ray": "^1.28"
+        "friendsofphp/php-cs-fixer": "^3.21.1"
     },
     "autoload": {
         "psr-4": {
