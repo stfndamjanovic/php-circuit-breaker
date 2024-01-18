@@ -24,6 +24,62 @@ $result = CircuitBreaker::for('3rd-party-service')->call(function () {
 });
 ```
 
+### Storage
+
+By default circuit breaker will use `InMemoryStorage` as a storage driver, which is not so useful if your app is stateless.
+
+More useful would be to use `RedisStorage`.
+```php
+use Stfn\CircuitBreaker\Storage\RedisStorage;
+
+$redis = new \Redis();
+$redis->connect("127.0.0.1");
+
+$storage = new RedisStorage($redis);
+
+$breaker = CircuitBreaker::for('3rd-party-service')
+    ->storage($storage)
+    ->call(function () {
+        // Your function that could fail
+    });
+```
+
+### Config
+
+Every circuit breaker has its own default config. You can always change it to fit your needs.
+```php
+$result = CircuitBreaker::for('3rd-party-service')
+    ->withOptions([
+        'failure_threshold' => 10,
+        'recovery_time' => 120
+    ])
+    ->call(function () {
+        // Your function that could fail
+    });
+```
+
+### Middlewares
+
+You can set circuit breaker to fail even if function call didn't throw an exception.
+
+```php
+$breaker = CircuitBreaker::for('test-service')
+    ->failWhen(function ($result) {
+        return $result->status() > 400;
+    });
+```
+
+Or you want to avoid some type of failures.
+
+```php
+$breaker = CircuitBreaker::for('test-service')
+    ->skipFailure(function ($exception) {
+        return $exception instanceof HttpException;
+    });
+```
+
+### Listeners
+
 ## Testing
 
 ```bash
