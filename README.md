@@ -37,7 +37,7 @@ $redis->connect("127.0.0.1");
 
 $storage = new RedisStorage($redis);
 
-$breaker = CircuitBreaker::for('3rd-party-service')
+$result = CircuitBreaker::for('3rd-party-service')
     ->storage($storage)
     ->call(function () {
         // Your function that could fail
