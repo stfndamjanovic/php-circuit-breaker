@@ -48,13 +48,11 @@ $breaker = CircuitBreaker::for('3rd-party-service')
 
 Every circuit breaker has its own default config. You can always change it to fit your needs.
 ```php
-$result = CircuitBreaker::for('3rd-party-service')
+$breaker = CircuitBreaker::for('3rd-party-service')
     ->withOptions([
         'failure_threshold' => 10,
         'recovery_time' => 120
-    ])->call(function () {
-        // Your function that could fail
-    });
+    ]);
 ```
 
 ### Middlewares
@@ -65,8 +63,6 @@ You can set circuit breaker to fail even if function call didn't throw an except
 $breaker = CircuitBreaker::for('test-service')
     ->failWhen(function ($result) {
         return $result->status() >= 400;
-    })->call(function () {
-        // Your function that could fail
     });
 ```
 
@@ -76,8 +72,6 @@ Or you want to avoid some type of failures.
 $breaker = CircuitBreaker::for('test-service')
     ->skipFailure(function ($exception) {
         return $exception instanceof HttpException;
-    })->call(function () {
-        // Your function that could fail
     });
 ```
 
