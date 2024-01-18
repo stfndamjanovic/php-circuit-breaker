@@ -13,16 +13,16 @@ class ClosedStateHandler extends StateHandler
      */
     public function onFailure(\Exception $exception)
     {
-        $storage = $this->breaker->storage;
+        $storage = $this->breaker->getStorage();
 
         $storage->incrementFailure();
 
         $failuresCount = $storage->getFailuresCount();
 
-        if ($failuresCount >= $this->breaker->config->failureThreshold) {
+        if ($failuresCount >= $this->breaker->getConfig()->failureThreshold) {
             $this->breaker->openCircuit();
 
-            throw CircuitOpenException::make($this->breaker->name);
+            throw CircuitOpenException::make($this->breaker->getName());
         }
     }
 }

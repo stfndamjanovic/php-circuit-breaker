@@ -12,41 +12,44 @@ use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 
 class CircuitBreaker
 {
-    public string $name;
+    /**
+     * @var string
+     */
+    protected string $name;
+
     /**
      * @var Config
      */
-    public Config $config;
+    protected Config $config;
 
     /**
      * @var CircuitBreakerStorage
      */
-    public CircuitBreakerStorage $storage;
+    protected CircuitBreakerStorage $storage;
 
     /**
      * @var CircuitBreakerListener[]
      */
-    public array $listeners = [];
+    protected array $listeners = [];
 
     /**
      * @var \Closure|null
      */
-    public \Closure|null $failWhenCallback = null;
+    protected \Closure|null $failWhenCallback = null;
 
     /**
      * @var \Closure|null
      */
-    public \Closure|null $skipFailureCallback = null;
+    protected \Closure|null $skipFailureCallback = null;
 
     /**
-     * @param Config|null $config
-     * @param CircuitBreakerStorage|null $storage
+     * @param string $name
      */
-    public function __construct(string $name, Config $config = null, CircuitBreakerStorage $storage = null)
+    private function __construct(string $name)
     {
         $this->name = $name;
-        $this->config = $config ?: new Config();
-        $this->storage = $storage ?: new InMemoryStorage();
+        $this->config = new Config();
+        $this->storage = new InMemoryStorage();
     }
 
     /**
@@ -121,10 +124,115 @@ class CircuitBreaker
 
     /**
      * @param string $service
-     * @return CircuitBreakerFactory
+     * @return self
      */
     public static function for(string $service)
     {
-        return new CircuitBreakerFactory(new self($service));
+        return new self($service);
+    }
+
+    /**
+     * @param array $options
+     * @return $this
+     */
+    public function withOptions(array $options): self
+    {
+        $this->config = Config::make($options);
+
+        return $this;
+    }
+
+    /**
+     * @param array $listeners
+     * @return $this
+     */
+    public function withListeners(array $listeners): self
+    {
+        foreach ($listeners as $listener) {
+            $this->addListener($listener);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function skipFailure(\Closure $closure)
+    {
+        $this->skipFailureCallback = $closure;
+
+        return $this;
+    }
+
+    /**
+     * @param \Closure $closure
+     * @return $this
+     */
+    public function failWhen(\Closure $closure)
+    {
+        $this->failWhenCallback = $closure;
+
+        return $this;
+    }
+
+    /**
+     * @param CircuitBreakerStorage $storage
+     * @return $this
+     */
+    public function storage(CircuitBreakerStorage $storage)
+    {
+        $this->storage = $storage;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getConfig(): Config
+    {
+        return $this->config;
+    }
+
+    /**
+     * @return CircuitBreakerStorage
+     */
+    public function getStorage(): CircuitBreakerStorage
+    {
+        return $this->storage;
+    }
+
+    /**
+     * @return array
+     */
+    public function getListeners(): array
+    {
+        return $this->listeners;
+    }
+
+    /**
+     * @return \Closure|null
+     */
+    public function getFailWhenCallback(): ?\Closure
+    {
+        return $this->failWhenCallback;
+    }
+
+    /**
+     * @return \Closure|null
+     */
+    public function getSkipFailureCallback(): ?\Closure
+    {
+        return $this->skipFailureCallback;
     }
 }

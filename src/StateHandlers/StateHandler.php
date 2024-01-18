@@ -23,7 +23,8 @@ class StateHandler
     /**
      * @param \Closure $action
      * @param ...$args
-     * @return mixed
+     * @return mixed|null
+     * @throws \Exception]
      */
     public function call(\Closure $action, ...$args)
     {
@@ -59,15 +60,15 @@ class StateHandler
      */
     public function handleFailure(\Exception $exception)
     {
-        if (is_callable($this->breaker->skipFailureCallback)) {
-            $shouldSkip = call_user_func($this->breaker->skipFailureCallback, $exception);
+        if (is_callable($this->breaker->getSkipFailureCallback())) {
+            $shouldSkip = call_user_func($this->breaker->getSkipFailureCallback(), $exception);
 
             if ($shouldSkip) {
                 return;
             }
         }
 
-        foreach ($this->breaker->listeners as $listener) {
+        foreach ($this->breaker->getListeners() as $listener) {
             $listener->onFail($exception);
         }
 
@@ -83,8 +84,8 @@ class StateHandler
      */
     public function handleSucess($result)
     {
-        if (is_callable($this->breaker->failWhenCallback)) {
-            $shouldFail = call_user_func($this->breaker->failWhenCallback, $result);
+        if (is_callable($this->breaker->getFailWhenCallback())) {
+            $shouldFail = call_user_func($this->breaker->getFailWhenCallback(), $result);
 
             if ($shouldFail) {
                 throw FailOnSuccessException::make();
@@ -93,7 +94,7 @@ class StateHandler
 
         $this->onSucess();
 
-        foreach ($this->breaker->listeners as $listener) {
+        foreach ($this->breaker->getListeners() as $listener) {
             $listener->onSuccess($result);
         }
     }

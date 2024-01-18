@@ -15,11 +15,11 @@ class OpenStateHandler extends StateHandler
      */
     public function beforeCall(\Closure $action, ...$args)
     {
-        $storage = $this->breaker->storage;
+        $storage = $this->breaker->getStorage();
 
         $openedAt = $storage->openedAt();
 
-        $recoveryTime = $this->breaker->config->recoveryTime;
+        $recoveryTime = $this->breaker->getConfig()->recoveryTime;
 
         if ($openedAt && (time() - $openedAt) > $recoveryTime) {
             $storage->setState(CircuitState::HalfOpen);
@@ -27,6 +27,6 @@ class OpenStateHandler extends StateHandler
             return;
         }
 
-        throw CircuitOpenException::make($this->breaker->name);
+        throw CircuitOpenException::make($this->breaker->getName());
     }
 }
