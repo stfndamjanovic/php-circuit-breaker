@@ -15,7 +15,7 @@ composer require stfndamjanovic/php-circuit-breaker
 
 ## Usage
 
-Wrap your potentially error-prone function with the circuit breaker, and it will monitor and handle failures. The circuit breaker tracks the occurrence of exceptions and takes preventive measures, such as opening the circuit, if failures become too frequent. During the circuit open state, calls to the function are temporarily halted, allowing the system to recover.
+Wrap your potentially error-prone function with the circuit breaker, and it will monitor and handle failures.
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
@@ -25,7 +25,34 @@ $result = CircuitBreaker::for('3rd-party-service')->call(function () {
 });
 ```
 
-### Storage
+## States
+
+Circuit breaker can have 4 different states.
+
+### Closed
+
+In the Closed state, the circuit breaker is fully operational, allowing calls to the 3rd party service. Any exceptions that occur during this state are counted.
+
+### Half Open
+
+The Half Open state is a transitional phase where the circuit breaker allows a limited number of calls to the 3rd party service. If these calls are successful, the circuit is closed again. However, if the service continues to exhibit issues, the circuit is moved back to the `Open` state.
+
+### Open
+
+The `Open` state indicates that the circuit breaker has detected a critical failure, and the call method will fail immediately, throwing a `CircuitOpenException` exception.
+
+### Force Open
+
+`Force Open` is not part of the regular flow. It can be utilized when intentional suspension of calls to a service is required. In this state, a `CircuitForceOpenException` will be thrown.
+
+To force the circuit breaker into the Force Open state, use the following:
+```php
+use Stfn\CircuitBreaker\CircuitBreaker;
+
+$breaker = CircuitBreaker::for('3rd-party-service')->forceOpenCircuit();
+```
+This feature provides a manual override to stop calls to a service temporarily, offering additional control when needed.
+## Storage
 
 By default, the circuit breaker uses `InMemoryStorage` as a storage driver, which is not suitable for most of PHP applications.
 
@@ -49,7 +76,7 @@ $result = CircuitBreaker::for('3rd-party-service')
 
 You could also write your implementation of storage. You should just implement `CircuitBreakerStorage` interface.
 
-### Configuration
+## Configuration
 
 Each circuit breaker has default configuration settings, but you can customize them to fit your needs:
 ```php
@@ -62,7 +89,7 @@ $breaker = CircuitBreaker::for('3rd-party-service')
     ]);
 ```
 
-### Middlewares
+## Interceptors
 
 You can configure the circuit breaker to fail based on specific conditions or to skip certain types of failures:
 
@@ -80,7 +107,7 @@ $breaker = CircuitBreaker::for('3rd-party-service')
     });
 ```
 
-### Listeners
+## Listeners
 
 You can add listeners for circuit breaker actions by extending the CircuitBreakerListener class:
 

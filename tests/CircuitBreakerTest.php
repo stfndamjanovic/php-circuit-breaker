@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitBreakerListener;
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Exceptions\CircuitForceOpenException;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 
@@ -195,5 +196,15 @@ class CircuitBreakerTest extends TestCase
         // Make sure that number of failures is reset to zero
         $this->assertEquals(0, $breaker->getStorage()->getFailuresCount());
         $this->assertTrue($breaker->isOpen());
+    }
+
+    public function test_if_it_can_force_open_circuit()
+    {
+        $breaker = CircuitBreaker::for('test-service');
+        $breaker->forceOpenCircuit();
+
+        $this->expectException(CircuitForceOpenException::class);
+
+        $breaker->call(fn() => true);
     }
 }

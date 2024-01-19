@@ -4,6 +4,7 @@ namespace Stfn\CircuitBreaker;
 
 use Stfn\CircuitBreaker\Exceptions\InvalidStateException;
 use Stfn\CircuitBreaker\StateHandlers\ClosedStateHandler;
+use Stfn\CircuitBreaker\StateHandlers\ForceOpenStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\HalfOpenStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\OpenStateHandler;
 use Stfn\CircuitBreaker\StateHandlers\StateHandler;
@@ -80,6 +81,7 @@ class CircuitBreaker
             CircuitState::Closed->value => ClosedStateHandler::class,
             CircuitState::HalfOpen->value => HalfOpenStateHandler::class,
             CircuitState::Open->value => OpenStateHandler::class,
+            CircuitState::ForceOpen->value => ForceOpenStateHandler::class
         ];
 
         if (! array_key_exists($state->value, $map)) {
@@ -103,6 +105,14 @@ class CircuitBreaker
     public function closeCircuit()
     {
         $this->storage->close();
+    }
+
+    /**
+     * @return void
+     */
+    public function forceOpenCircuit()
+    {
+        $this->storage->setState(CircuitState::ForceOpen);
     }
 
     /**
