@@ -81,7 +81,7 @@ class CircuitBreaker
             CircuitState::Closed->value => ClosedStateHandler::class,
             CircuitState::HalfOpen->value => HalfOpenStateHandler::class,
             CircuitState::Open->value => OpenStateHandler::class,
-            CircuitState::ForceOpen->value => ForceOpenStateHandler::class
+            CircuitState::ForceOpen->value => ForceOpenStateHandler::class,
         ];
 
         if (! array_key_exists($state->value, $map)) {
