@@ -128,7 +128,7 @@ class CircuitBreaker
      */
     public function isClosed()
     {
-        return !$this->isOpen();
+        return ! $this->isOpen();
     }
 
     /**

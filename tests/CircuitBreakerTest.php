@@ -77,7 +77,7 @@ class CircuitBreakerTest extends TestCase
             ]);
 
         $fail = function () {
-          throw new \Exception();
+            throw new \Exception();
         };
 
         foreach (range(1, 3) as $i) {
@@ -96,7 +96,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
                 'failure_ratio' => 0.51,
-                'minimum_throughput' => 4
+                'minimum_throughput' => 4,
             ]);
 
         $success = function () {
@@ -104,7 +104,7 @@ class CircuitBreakerTest extends TestCase
         };
 
         $fail = function () {
-          throw new \Exception();
+            throw new \Exception();
         };
 
         $breaker->call($success);
@@ -126,11 +126,11 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
                 'failure_ratio' => 0.5,
-                'minimum_throughput' => 4
+                'minimum_throughput' => 4,
             ]);
 
-        $breaker->call(fn() => true);
-        $breaker->call(fn() => true);
+        $breaker->call(fn () => true);
+        $breaker->call(fn () => true);
 
         $fail = function () {
             throw new \Exception();
