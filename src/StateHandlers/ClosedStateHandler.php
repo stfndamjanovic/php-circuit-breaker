@@ -7,6 +7,14 @@ use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 class ClosedStateHandler extends StateHandler
 {
     /**
+     * @return void
+     */
+    public function onSucess()
+    {
+        $this->breaker->getStorage()->incrementSuccess();
+    }
+
+    /**
      * @param \Exception $exception
      * @return void
      * @throws CircuitOpenException
@@ -17,9 +25,11 @@ class ClosedStateHandler extends StateHandler
 
         $storage->incrementFailure();
 
-        $failuresCount = $storage->getFailuresCount();
+        $config = $this->breaker->getConfig();
 
-        if ($failuresCount >= $this->breaker->getConfig()->failureThreshold) {
+        $counter = $storage->getCounter();
+
+        if ($counter->total() >= $config->minimumThroughput && $counter->failureRatio() >= $config->failureRatio) {
             $this->breaker->openCircuit();
 
             throw CircuitOpenException::make($this->breaker->getName());

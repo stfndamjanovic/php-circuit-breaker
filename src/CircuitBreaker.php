@@ -61,7 +61,7 @@ class CircuitBreaker
      */
     public function call(\Closure $action, ...$args)
     {
-        $this->storage->init($this->name);
+        $this->storage->init($this);
 
         /** @var StateHandler $stateHandler */
         $stateHandler = $this->makeStateHandler();

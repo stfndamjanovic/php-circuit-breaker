@@ -2,17 +2,24 @@
 
 namespace Stfn\CircuitBreaker\Storage;
 
+use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Counter;
 
 abstract class CircuitBreakerStorage
 {
     /**
-     * @param string $service
+     * @var CircuitBreaker
+     */
+    protected CircuitBreaker $breaker;
+
+    /**
+     * @param CircuitBreaker $breaker
      * @return void
      */
-    public function init(string $service): void
+    public function init(CircuitBreaker $breaker): void
     {
-
+        $this->breaker = $breaker;
     }
 
     /**
@@ -44,12 +51,17 @@ abstract class CircuitBreakerStorage
     /**
      * @return void
      */
+    abstract public function incrementSuccess(): void;
+
+    /**
+     * @return void
+     */
     abstract public function resetCounter(): void;
 
     /**
-     * @return int
+     * @return Counter
      */
-    abstract public function getFailuresCount(): int;
+    abstract public function getCounter(): Counter;
 
     /**
      * @return int

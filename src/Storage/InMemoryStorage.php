@@ -3,6 +3,7 @@
 namespace Stfn\CircuitBreaker\Storage;
 
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Counter;
 
 class InMemoryStorage extends CircuitBreakerStorage
 {
@@ -15,6 +16,11 @@ class InMemoryStorage extends CircuitBreakerStorage
      * @var int
      */
     protected int $failCount = 0;
+
+    /**
+     * @var int
+     */
+    protected int $successCount = 0;
 
     /**
      * @var int|null
@@ -49,17 +55,25 @@ class InMemoryStorage extends CircuitBreakerStorage
     /**
      * @return void
      */
+    public function incrementSuccess(): void
+    {
+        $this->successCount++;
+    }
+
+    /**
+     * @return void
+     */
     public function resetCounter(): void
     {
         $this->failCount = 0;
     }
 
     /**
-     * @return int
+     * @return Counter
      */
-    public function getFailuresCount(): int
+    public function getCounter(): Counter
     {
-        return $this->failCount;
+        return new Counter($this->failCount, $this->successCount);
     }
 
     /**

@@ -84,8 +84,10 @@ use Stfn\CircuitBreaker\CircuitBreaker;
 
 $breaker = CircuitBreaker::for('3rd-party-service')
     ->withOptions([
-        'failure_threshold' => 10,
-        'recovery_time' => 120
+        'failure_ratio' => 0.2,
+        'minimum_throughput' => 10
+        'recovery_time' => 120,
+        'sample_duration' => 120
     ]);
 ```
 
