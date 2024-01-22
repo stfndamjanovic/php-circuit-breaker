@@ -20,7 +20,7 @@ class ConfigTest extends TestCase
             'failure_ratio' => 0.2,
             'minimum_throughput' => 10,
             'recovery_time' => 120,
-            'sample_duration' => 120
+            'sample_duration' => 120,
         ];
 
         $config = Config::fromArray($setup);
