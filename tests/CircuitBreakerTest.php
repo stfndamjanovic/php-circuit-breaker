@@ -223,6 +223,6 @@ class CircuitBreakerTest extends TestCase
 
         $this->expectException(CircuitForceOpenException::class);
 
-        $breaker->call(fn() => true);
+        $breaker->call(fn () => true);
     }
 }
