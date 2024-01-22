@@ -19,7 +19,7 @@ class CircuitBreakerListener
 
     }
 
-    public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState)
+    public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState): void
     {
 
     }
