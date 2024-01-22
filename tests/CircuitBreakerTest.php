@@ -171,6 +171,7 @@ class CircuitBreakerTest extends TestCase
     {
         $object = new class () extends CircuitBreakerListener {
             public int $count = 0;
+
             public function beforeCall(\Closure $action, ...$args): void
             {
                 $this->count++;
@@ -179,8 +180,8 @@ class CircuitBreakerTest extends TestCase
 
         $breaker = CircuitBreaker::for('test-service')->withListeners([$object]);
 
-        $breaker->call(fn() => true);
-        $breaker->call(fn() => true);
+        $breaker->call(fn () => true);
+        $breaker->call(fn () => true);
 
         $this->assertEquals(2, $object->count);
     }
