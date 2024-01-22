@@ -31,7 +31,7 @@ Circuit breaker can have 4 different states.
 
 ### Closed
 
-In the Closed state, the circuit breaker is fully operational, allowing calls to the 3rd party service. Any exceptions that occur during this state are counted.
+In the `Closed` state, the circuit breaker is fully operational, allowing calls to the 3rd party service. Any exceptions that occur during this state are counted.
 
 ### Half Open
 
@@ -116,6 +116,11 @@ use Stfn\CircuitBreaker\CircuitBreakerListener;
 
 class LoggerListener extends CircuitBreakerListener
 {
+    public function beforeCall(\Closure $action,...$args) : void
+    {
+        Log::info("before call");    
+    }
+    
     public function onSuccess($result): void
     {
         Log::info($result);

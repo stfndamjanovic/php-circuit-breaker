@@ -32,6 +32,10 @@ class StateHandler
 
         $this->beforeCall($action, $args);
 
+        foreach ($this->breaker->getListeners() as $listener) {
+            $listener->beforeCall($action, $args);
+        }
+
         try {
             $result = call_user_func($action, $args);
 

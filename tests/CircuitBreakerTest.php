@@ -161,6 +161,24 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(1, $object->failCount);
     }
 
+    public function test_if_listener_before_call_is_triggered()
+    {
+        $object = new class () extends CircuitBreakerListener {
+            public int $count = 0;
+            public function beforeCall(\Closure $action, ...$args): void
+            {
+                $this->count++;
+            }
+        };
+
+        $breaker = CircuitBreaker::for('test-service')->withListeners([$object]);
+
+        $breaker->call(fn() => true);
+        $breaker->call(fn() => true);
+
+        $this->assertEquals(2, $object->count);
+    }
+
     public function test_if_it_can_skip_some_exception()
     {
         $testException = new class () extends \Exception {};
