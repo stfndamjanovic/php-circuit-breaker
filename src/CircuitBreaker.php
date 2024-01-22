@@ -124,6 +124,14 @@ class CircuitBreaker
     }
 
     /**
+     * @return bool
+     */
+    public function isClosed()
+    {
+        return !$this->isOpen();
+    }
+
+    /**
      * @param CircuitBreakerListener $listener
      * @return void
      */
