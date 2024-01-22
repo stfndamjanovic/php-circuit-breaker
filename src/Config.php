@@ -37,8 +37,7 @@ class Config
         int $minimumThroughput = 5,
         int $recoveryTime = 60,
         int $sampleDuration = 60
-    )
-    {
+    ) {
         $this->failureRatio = $failureRatio;
         $this->minimumThroughput = $minimumThroughput;
         $this->recoveryTime = $recoveryTime;
@@ -68,7 +67,7 @@ class Config
             'failure_ratio' => $this->failureRatio,
             'minimum_throughput' => $this->minimumThroughput,
             'recovery_time' => $this->recoveryTime,
-            'sample_duration' => $this->sampleDuration
+            'sample_duration' => $this->sampleDuration,
         ];
     }
 }
