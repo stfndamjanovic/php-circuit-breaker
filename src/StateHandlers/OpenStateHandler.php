@@ -2,7 +2,6 @@
 
 namespace Stfn\CircuitBreaker\StateHandlers;
 
-use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 
 class OpenStateHandler extends StateHandler
