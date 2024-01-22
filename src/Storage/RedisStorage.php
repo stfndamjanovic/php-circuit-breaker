@@ -93,7 +93,7 @@ class RedisStorage extends CircuitBreakerStorage
     protected function incrementOrCreate($key, $ttl)
     {
         if (! $this->redis->exists($key)) {
-             $this->redis->set($key, 0, $ttl);
+            $this->redis->set($key, 0, $ttl);
         }
 
         $this->redis->incr($key);

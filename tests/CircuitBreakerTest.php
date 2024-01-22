@@ -48,7 +48,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
                 'failure_ratio' => 1,
-                'minimum_throughput' => 4
+                'minimum_throughput' => 4,
             ]);
 
         $fail = function () {
@@ -73,7 +73,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
                 'failure_ratio' => 1,
-                'minimum_throughput' => 4
+                'minimum_throughput' => 4,
             ]);
 
         $fail = function () {
@@ -260,7 +260,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
                 'failure_ratio' => 1,
-                'minimum_throughput' => 3
+                'minimum_throughput' => 3,
             ])
             ->failWhen(function ($result) {
                 return $result instanceof \stdClass;
