@@ -6,6 +6,6 @@ class FailOnSuccessException extends \Exception
 {
     public static function make()
     {
-        return new self("Circuit breaker failed on success.");
+        return new self("The circuit is manually failed");
     }
 }
