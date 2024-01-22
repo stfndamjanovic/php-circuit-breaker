@@ -294,7 +294,7 @@ class CircuitBreakerTest extends TestCase
         $object = new class () extends CircuitBreakerListener {
             public string $state = '';
 
-            public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState)
+            public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState): void
             {
                 $this->state .= "{$previousState->value}->{$newState->value},";
             }
