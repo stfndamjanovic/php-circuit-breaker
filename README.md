@@ -107,7 +107,7 @@ $breaker = CircuitBreaker::for('3rd-party-service')
 
 $breaker = CircuitBreaker::for('3rd-party-service')
     ->skipFailure(function ($exception) {
-        return $exception instanceof HttpException;
+        return $exception->getCode() < 500;
     });
 ```
 
