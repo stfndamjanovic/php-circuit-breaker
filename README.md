@@ -136,9 +136,7 @@ class LoggerListener extends CircuitBreakerListener
     
     public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState)
     {
-      if ($newState == CircuitState::Closed) {
-         Mail::to('admin@office.com')
-      }
+        Log::info($previousState, $newState);
     }
 }
 ```
