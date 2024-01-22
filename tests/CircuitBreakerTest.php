@@ -185,12 +185,12 @@ class CircuitBreakerTest extends TestCase
             public int $successCount = 0;
             public int $failCount = 0;
 
-            public function onSuccess($result): void
+            public function onSuccess(CircuitBreaker $breaker, $result): void
             {
                 $this->successCount++;
             }
 
-            public function onFail($exception): void
+            public function onFail(CircuitBreaker $breaker, $exception): void
             {
                 $this->failCount++;
             }
@@ -225,7 +225,7 @@ class CircuitBreakerTest extends TestCase
         $object = new class () extends CircuitBreakerListener {
             public int $count = 0;
 
-            public function beforeCall(\Closure $action, ...$args): void
+            public function beforeCall(CircuitBreaker $breaker, \Closure $action, ...$args): void
             {
                 $this->count++;
             }
@@ -287,5 +287,26 @@ class CircuitBreakerTest extends TestCase
         $this->expectException(CircuitForceOpenException::class);
 
         $breaker->call(fn () => true);
+    }
+
+    public function test_if_listener_state_change_is_triggered()
+    {
+        $object = new class () extends CircuitBreakerListener {
+            public string $state = '';
+
+            public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState)
+            {
+                $this->state .= "{$previousState->value}->{$newState->value},";
+            }
+        };
+
+        $breaker = CircuitBreaker::for('test-service')->withListeners([$object]);
+
+        $breaker->openCircuit();
+        $breaker->halfOpenCircuit();
+        $breaker->closeCircuit();
+        $breaker->forceOpenCircuit();
+
+        $this->assertEquals("closed->open,open->half_open,half_open->closed,closed->force_open,", $object->state);
     }
 }

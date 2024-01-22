@@ -63,14 +63,13 @@ class CircuitBreaker
     {
         $this->storage->init($this);
 
-        /** @var StateHandler $stateHandler */
         $stateHandler = $this->makeStateHandler();
 
         return $stateHandler->call($action, $args);
     }
 
     /**
-     * @return mixed
+     * @return StateHandler
      * @throws \Exception
      */
     protected function makeStateHandler()
@@ -92,11 +91,30 @@ class CircuitBreaker
     }
 
     /**
+     * @param CircuitState $newState
+     * @return void
+     */
+    protected function setState(CircuitState $newState)
+    {
+        $currentState = $this->storage->getState();
+
+        match ($newState) {
+            CircuitState::Open => $this->storage->open(),
+            CircuitState::Closed => $this->storage->close(),
+            default => $this->storage->setState($newState),
+        };
+
+        foreach ($this->listeners as $listener) {
+            $listener->onStateChange($this, $currentState, $newState);
+        }
+    }
+
+    /**
      * @return void
      */
     public function openCircuit()
     {
-        $this->storage->open();
+        $this->setState(CircuitState::Open);
     }
 
     /**
@@ -104,7 +122,15 @@ class CircuitBreaker
      */
     public function closeCircuit()
     {
-        $this->storage->close();
+        $this->setState(CircuitState::Closed);
+    }
+
+    /**
+     * @return void
+     */
+    public function halfOpenCircuit()
+    {
+        $this->setState(CircuitState::HalfOpen);
     }
 
     /**
@@ -112,7 +138,7 @@ class CircuitBreaker
      */
     public function forceOpenCircuit()
     {
-        $this->storage->setState(CircuitState::ForceOpen);
+        $this->setState(CircuitState::ForceOpen);
     }
 
     /**

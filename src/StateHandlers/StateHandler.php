@@ -33,7 +33,7 @@ class StateHandler
         $this->beforeCall($action, $args);
 
         foreach ($this->breaker->getListeners() as $listener) {
-            $listener->beforeCall($action, $args);
+            $listener->beforeCall($this->breaker, $action, $args);
         }
 
         try {
@@ -73,7 +73,7 @@ class StateHandler
         }
 
         foreach ($this->breaker->getListeners() as $listener) {
-            $listener->onFail($exception);
+            $listener->onFail($this->breaker, $exception);
         }
 
         $this->onFailure($exception);
@@ -99,7 +99,7 @@ class StateHandler
         $this->onSucess();
 
         foreach ($this->breaker->getListeners() as $listener) {
-            $listener->onSuccess($result);
+            $listener->onSuccess($this->breaker, $result);
         }
     }
 

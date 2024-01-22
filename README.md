@@ -115,22 +115,30 @@ You can add listeners for circuit breaker actions by extending the CircuitBreake
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreakerListener;
+use Stfn\CircuitBreaker\CircuitState;
 
 class LoggerListener extends CircuitBreakerListener
 {
-    public function beforeCall(\Closure $action,...$args) : void
+    public function beforeCall(CircuitBreaker $breaker, \Closure $action,...$args) : void
     {
         Log::info("before call");    
     }
     
-    public function onSuccess($result): void
+    public function onSuccess(CircuitBreaker $breaker, $result): void
     {
         Log::info($result);
     }
 
-    public function onFail($exception) : void
+    public function onFail(CircuitBreaker $breaker, $exception) : void
     {
         Log::info($exception);
+    }
+    
+    public function onStateChange(CircuitBreaker $breaker, CircuitState $previousState, CircuitState $newState)
+    {
+      if ($newState == CircuitState::Closed) {
+         Mail::to('admin@office.com')
+      }
     }
 }
 ```

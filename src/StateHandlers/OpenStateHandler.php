@@ -22,7 +22,7 @@ class OpenStateHandler extends StateHandler
         $recoveryTime = $this->breaker->getConfig()->recoveryTime;
 
         if ($openedAt && (time() - $openedAt) > $recoveryTime) {
-            $storage->setState(CircuitState::HalfOpen);
+            $this->breaker->halfOpenCircuit();
 
             return;
         }
