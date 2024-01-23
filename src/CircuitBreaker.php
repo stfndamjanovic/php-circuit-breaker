@@ -76,18 +76,15 @@ class CircuitBreaker
     {
         $state = $this->storage->getState();
 
-        $map = [
+        $class = match ($state->value) {
             CircuitState::Closed->value => ClosedStateHandler::class,
             CircuitState::HalfOpen->value => HalfOpenStateHandler::class,
             CircuitState::Open->value => OpenStateHandler::class,
             CircuitState::ForceOpen->value => ForceOpenStateHandler::class,
-        ];
+            default => throw InvalidStateException::make($state->value)
+        };
 
-        if (! array_key_exists($state->value, $map)) {
-            throw InvalidStateException::make($state->value);
-        }
-
-        return new $map[$state->value]($this);
+        return new $class($this);
     }
 
     /**
