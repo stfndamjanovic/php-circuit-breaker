@@ -9,12 +9,7 @@ class Config
     /**
      * @var float
      */
-    public float $failureRatio;
-
-    /**
-     * @var int
-     */
-    public int $minimumThroughput;
+    public float $failureThreshold;
 
     /**
      * @var int
@@ -27,23 +22,16 @@ class Config
     public int $sampleDuration;
 
     /**
-     * @param float $failureRatio
-     * @param int $minimumThroughput
+     * @param float $failureThreshold
      * @param int $recoveryTime
      * @param int $sampleDuration
      */
     public function __construct(
-        float $failureRatio = 0.5,
-        int $minimumThroughput = 10,
+        float $failureThreshold = 5,
         int $recoveryTime = 60,
         int $sampleDuration = 120
     ) {
-        if ($failureRatio < 0 || $failureRatio > 1) {
-            throw new \InvalidArgumentException("Failure ratio must be between 0 and 1");
-        }
-
-        $this->failureRatio = $failureRatio;
-        $this->minimumThroughput = $minimumThroughput;
+        $this->failureThreshold = $failureThreshold;
         $this->recoveryTime = $recoveryTime;
         $this->sampleDuration = $sampleDuration;
     }
@@ -55,8 +43,7 @@ class Config
     public static function fromArray(array $config = []): Config
     {
         return new Config(
-            $config['failure_ratio'] ?? 0.5,
-            $config['minimum_throughput'] ?? 10,
+            $config['failure_threshold'] ?? 5,
             $config['recovery_time'] ?? 60,
             $config['sample_duration'] ?? 120
         );
@@ -68,8 +55,7 @@ class Config
     public function toArray()
     {
         return [
-            'failure_ratio' => $this->failureRatio,
-            'minimum_throughput' => $this->minimumThroughput,
+            'failure_ratio' => $this->failureThreshold,
             'recovery_time' => $this->recoveryTime,
             'sample_duration' => $this->sampleDuration,
         ];

@@ -11,7 +11,6 @@ class RedisStorage extends CircuitBreakerStorage
     public const BASE_NAMESPACE = "stfn_php_circuit_breaker";
     public const STATE_KEY = "state";
     public const FAIL_COUNT_KEY = "fail_count";
-    public const SUCCESS_COUNT_KEY = "success_count";
     public const OPENED_AT_KEY = "opened_at";
 
     /**
@@ -72,16 +71,10 @@ class RedisStorage extends CircuitBreakerStorage
      */
     public function incrementFailure(): void
     {
-        $this->incrementOrCreate($this->getNamespace(self::FAIL_COUNT_KEY), $this->breaker->getConfig()->sampleDuration);
-    }
-
-    /**
-     * @return void
-     * @throws \RedisException
-     */
-    public function incrementSuccess(): void
-    {
-        $this->incrementOrCreate($this->getNamespace(self::SUCCESS_COUNT_KEY), $this->breaker->getConfig()->sampleDuration);
+        $this->incrementOrCreate(
+            $this->getNamespace(self::FAIL_COUNT_KEY),
+            $this->breaker->getConfig()->sampleDuration
+        );
     }
 
     /**
@@ -110,15 +103,12 @@ class RedisStorage extends CircuitBreakerStorage
     }
 
     /**
-     * @return Counter
+     * @return int
      * @throws \RedisException
      */
-    public function getCounter(): Counter
+    public function getNumberOfFailures(): int
     {
-        $failuresCount = (int) $this->redis->get($this->getNamespace(self::FAIL_COUNT_KEY));
-        $successCount = (int) $this->redis->get($this->getNamespace(self::SUCCESS_COUNT_KEY));
-
-        return new Counter($failuresCount, $successCount);
+        return (int) $this->redis->get($this->getNamespace(self::FAIL_COUNT_KEY));
     }
 
     /**

@@ -51,17 +51,12 @@ abstract class CircuitBreakerStorage
     /**
      * @return void
      */
-    abstract public function incrementSuccess(): void;
-
-    /**
-     * @return void
-     */
     abstract public function resetCounter(): void;
 
     /**
-     * @return Counter
+     * @return int
      */
-    abstract public function getCounter(): Counter;
+    abstract public function getNumberOfFailures(): int;
 
     /**
      * @return int

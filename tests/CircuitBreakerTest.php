@@ -47,8 +47,7 @@ class CircuitBreakerTest extends TestCase
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_ratio' => 1,
-                'minimum_throughput' => 4,
+                'failure_threshold' => 4
             ]);
 
         $fail = function () {
@@ -65,15 +64,14 @@ class CircuitBreakerTest extends TestCase
             }
         }
 
-        $this->assertEquals($tries, $breaker->getStorage()->getCounter()->getNumberOfFailures());
+        $this->assertEquals($tries, $breaker->getStorage()->getNumberOfFailures());
     }
 
-    public function test_if_it_will_not_open_breaker_when_minimum_throughput_is_not_reached()
+    public function test_if_it_will_open_circuit_when_failure_threshold_is_reached()
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_ratio' => 1,
-                'minimum_throughput' => 4,
+                'failure_threshold' => 3
             ]);
 
         $fail = function () {
@@ -88,64 +86,8 @@ class CircuitBreakerTest extends TestCase
             }
         }
 
-        $this->assertTrue($breaker->isClosed());
-    }
-
-    public function test_if_it_will_not_open_breaker_if_ratio_is_not_reached()
-    {
-        $breaker = CircuitBreaker::for('test-service')
-            ->withOptions([
-                'failure_ratio' => 0.51,
-                'minimum_throughput' => 4,
-            ]);
-
-        $success = function () {
-            return true;
-        };
-
-        $fail = function () {
-            throw new \Exception();
-        };
-
-        $breaker->call($success);
-        $breaker->call($success);
-
-        foreach (range(1, 2) as $i) {
-            try {
-                $breaker->call($fail);
-            } catch (\Exception) {
-
-            }
-        }
-
-        $this->assertTrue($breaker->isClosed());
-    }
-
-    public function test_if_it_will_open_circuit_when_failure_ratio_is_reached()
-    {
-        $breaker = CircuitBreaker::for('test-service')
-            ->withOptions([
-                'failure_ratio' => 0.5,
-                'minimum_throughput' => 4,
-            ]);
-
-        $breaker->call(fn () => true);
-        $breaker->call(fn () => true);
-
-        $fail = function () {
-            throw new \Exception();
-        };
-
-        foreach (range(1, 2) as $i) {
-            try {
-                $breaker->call($fail);
-            } catch (\Exception) {
-
-            }
-        }
-
         $this->assertTrue($breaker->isOpen());
-        $this->assertEquals(0, $breaker->getStorage()->getCounter()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
     }
 
     public function test_if_it_will_close_circuit_after_success_call()
@@ -252,15 +194,14 @@ class CircuitBreakerTest extends TestCase
             throw $testException;
         });
 
-        $this->assertEquals(0, $breaker->getStorage()->getCounter()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
     }
 
     public function test_if_it_can_fail_even_without_exception()
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_ratio' => 1,
-                'minimum_throughput' => 3,
+                'failure_threshold' => 3
             ])
             ->failWhen(function ($result) {
                 return $result instanceof \stdClass;
@@ -275,7 +216,7 @@ class CircuitBreakerTest extends TestCase
         }
 
         // Make sure that number of failures is reset to zero
-        $this->assertEquals(0, $breaker->getStorage()->getCounter()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
         $this->assertTrue($breaker->isOpen());
     }
 
