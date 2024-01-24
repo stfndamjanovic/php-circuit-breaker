@@ -47,7 +47,7 @@ class CircuitBreakerTest extends TestCase
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_threshold' => 4
+                'failure_threshold' => 4,
             ]);
 
         $fail = function () {
@@ -71,7 +71,7 @@ class CircuitBreakerTest extends TestCase
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_threshold' => 3
+                'failure_threshold' => 3,
             ]);
 
         $fail = function () {
@@ -201,7 +201,7 @@ class CircuitBreakerTest extends TestCase
     {
         $breaker = CircuitBreaker::for('test-service')
             ->withOptions([
-                'failure_threshold' => 3
+                'failure_threshold' => 3,
             ])
             ->failWhen(function ($result) {
                 return $result instanceof \stdClass;

@@ -4,7 +4,6 @@ namespace Stfn\CircuitBreaker\Storage;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
-use Stfn\CircuitBreaker\Counter;
 
 class RedisStorage extends CircuitBreakerStorage
 {
@@ -19,9 +18,8 @@ class RedisStorage extends CircuitBreakerStorage
     protected \Redis $redis;
 
     /**
-     * @param string $service
      * @param \Redis $redis
-     * @throws \RedisException
+     * @throws \Exception
      */
     public function __construct(\Redis $redis)
     {
@@ -33,7 +31,7 @@ class RedisStorage extends CircuitBreakerStorage
     }
 
     /**
-     * @param string $service
+     * @param CircuitBreaker $breaker
      * @return void
      * @throws \RedisException
      */
@@ -99,7 +97,6 @@ class RedisStorage extends CircuitBreakerStorage
     public function resetCounter(): void
     {
         $this->redis->del($this->getNamespace(self::FAIL_COUNT_KEY));
-        $this->redis->del($this->getNamespace(self::SUCCESS_COUNT_KEY));
     }
 
     /**

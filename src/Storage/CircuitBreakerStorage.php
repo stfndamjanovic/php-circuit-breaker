@@ -4,7 +4,6 @@ namespace Stfn\CircuitBreaker\Storage;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
-use Stfn\CircuitBreaker\Counter;
 
 abstract class CircuitBreakerStorage
 {
