@@ -27,5 +27,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($setup['failure_threshold'], $config->failureThreshold);
         $this->assertEquals($setup['recovery_time'], $config->recoveryTime);
         $this->assertEquals($setup['sample_duration'], $config->sampleDuration);
+
+        $this->assertEquals($setup, $config->toArray());
     }
 }

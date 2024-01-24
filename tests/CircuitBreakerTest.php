@@ -9,6 +9,8 @@ use Stfn\CircuitBreaker\CircuitState;
 use Stfn\CircuitBreaker\Exceptions\CircuitForceOpenException;
 use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
+use Stfn\CircuitBreaker\Storage\InMemoryStorage;
+use Stfn\CircuitBreaker\Storage\RedisStorage;
 
 class CircuitBreakerTest extends TestCase
 {
@@ -29,6 +31,8 @@ class CircuitBreakerTest extends TestCase
         });
 
         $this->assertEquals($object, $result);
+
+        $this->assertTrue($breaker->isClosed());
     }
 
     public function test_if_it_will_throw_an_exception_if_circuit_breaker_is_open()
@@ -119,6 +123,18 @@ class CircuitBreakerTest extends TestCase
         $breaker->call($fail);
 
         $this->assertTrue($breaker->isOpen());
+    }
+
+    public function test_if_it_will_transit_to_half_open_state_after_recovery_time()
+    {
+        $breaker = CircuitBreaker::for('test')->withOptions(['recovery_time' => 1]);
+        $breaker->openCircuit();
+
+        sleep(2);
+
+        $breaker->call(fn () => true);
+
+        $this->assertEquals(CircuitState::HalfOpen, $breaker->getStorage()->getState());
     }
 
     public function test_if_listener_is_called()
@@ -249,5 +265,16 @@ class CircuitBreakerTest extends TestCase
         $breaker->forceOpenCircuit();
 
         $this->assertEquals("closed->open,open->half_open,half_open->closed,closed->force_open,", $object->state);
+    }
+
+    public function test_if_it_can_set_a_new_storage()
+    {
+        $breaker = CircuitBreaker::for('test');
+
+        $this->assertInstanceOf(InMemoryStorage::class, $breaker->getStorage());
+
+        $breaker->storage(new RedisStorage(new \Redis()));
+
+        $this->assertInstanceOf(RedisStorage::class, $breaker->getStorage());
     }
 }
