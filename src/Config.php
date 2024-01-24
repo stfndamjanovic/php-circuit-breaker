@@ -7,9 +7,9 @@ namespace Stfn\CircuitBreaker;
 class Config
 {
     /**
-     * @var float
+     * @var int
      */
-    public float $failureThreshold;
+    public int $failureThreshold;
 
     /**
      * @var int
@@ -22,12 +22,12 @@ class Config
     public int $sampleDuration;
 
     /**
-     * @param float $failureThreshold
+     * @param int $failureThreshold
      * @param int $recoveryTime
      * @param int $sampleDuration
      */
     public function __construct(
-        float $failureThreshold = 5,
+        int $failureThreshold = 5,
         int $recoveryTime = 60,
         int $sampleDuration = 120
     ) {
@@ -55,7 +55,7 @@ class Config
     public function toArray()
     {
         return [
-            'failure_ratio' => $this->failureThreshold,
+            'failure_threshold' => $this->failureThreshold,
             'recovery_time' => $this->recoveryTime,
             'sample_duration' => $this->sampleDuration,
         ];
