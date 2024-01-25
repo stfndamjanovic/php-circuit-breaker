@@ -19,7 +19,7 @@ class ClosedStateHandler extends StateHandler
 
         $config = $this->breaker->getConfig();
 
-        if ($storage->getNumberOfFailures() >= $config->failureThreshold) {
+        if ($storage->getCounter()->numberOfFailures() >= $config->failureThreshold) {
             $this->breaker->openCircuit();
 
             throw CircuitOpenException::make($this->breaker->getName());

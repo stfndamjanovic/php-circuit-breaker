@@ -11,8 +11,13 @@ class HalfOpenStateHandler extends StateHandler
      */
     public function onSucess()
     {
-        //@ToDo Close circuit after few successful calls
-        $this->breaker->closeCircuit();
+        $storage = $this->breaker->getStorage();
+
+        $storage->incrementSuccess();
+
+        if ($storage->getCounter()->numberOfSuccess() >= $this->breaker->getConfig()->consecutiveSuccess) {
+            $this->breaker->closeCircuit();
+        }
     }
 
     /**

@@ -22,18 +22,26 @@ class Config
     public int $sampleDuration;
 
     /**
+     * @var int
+     */
+    public int $consecutiveSuccess;
+
+    /**
      * @param int $failureThreshold
      * @param int $recoveryTime
      * @param int $sampleDuration
+     * @param int $consecutiveSuccesses
      */
     public function __construct(
         int $failureThreshold = 5,
         int $recoveryTime = 60,
-        int $sampleDuration = 120
+        int $sampleDuration = 120,
+        int $consecutiveSuccess = 3
     ) {
         $this->failureThreshold = $failureThreshold;
         $this->recoveryTime = $recoveryTime;
         $this->sampleDuration = $sampleDuration;
+        $this->consecutiveSuccess = $consecutiveSuccess;
     }
 
     /**
@@ -45,7 +53,8 @@ class Config
         return new Config(
             $config['failure_threshold'] ?? 5,
             $config['recovery_time'] ?? 60,
-            $config['sample_duration'] ?? 120
+            $config['sample_duration'] ?? 120,
+            $config['consecutive_success'] ?? 3
         );
     }
 
@@ -58,6 +67,7 @@ class Config
             'failure_threshold' => $this->failureThreshold,
             'recovery_time' => $this->recoveryTime,
             'sample_duration' => $this->sampleDuration,
+            'consecutive_success' => $this->consecutiveSuccess,
         ];
     }
 }

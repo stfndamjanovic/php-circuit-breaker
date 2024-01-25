@@ -39,32 +39,35 @@ class RedisStorageTest extends TestCase
 
         $storage->init(CircuitBreaker::for('test'));
 
-        $this->assertEquals(0, $storage->getNumberOfFailures());
+        $this->assertEquals(0, $storage->getCounter()->numberOfFailures());
 
         $storage->incrementFailure();
 
-        $this->assertEquals(1, $storage->getNumberOfFailures());
+        $this->assertEquals(1, $storage->getCounter()->numberOfFailures());
 
         $storage->incrementFailure();
 
 
-        $this->assertEquals(2, $storage->getNumberOfFailures());
+        $this->assertEquals(2, $storage->getCounter()->numberOfFailures());
     }
 
-    public function test_if_reset_counter_will_remove_fail_count()
+    public function test_if_set_new_state_will_remove_counts()
     {
         $storage = new RedisStorage($this->getRedisInstance());
         $storage->init(CircuitBreaker::for('test'));
 
+        $storage->incrementSuccess();
         $storage->incrementFailure();
         $storage->incrementFailure();
         $storage->incrementFailure();
 
-        $this->assertEquals(3, $storage->getNumberOfFailures());
+        $this->assertEquals(3, $storage->getCounter()->numberOfFailures());
+        $this->assertEquals(1, $storage->getCounter()->numberOfSuccess());
 
-        $storage->resetCounter();
+        $storage->setState(CircuitState::Open);
 
-        $this->assertEquals(0, $storage->getNumberOfFailures());
+        $this->assertEquals(0, $storage->getCounter()->numberOfFailures());
+        $this->assertEquals(0, $storage->getCounter()->numberOfSuccess());
     }
 
     public function test_transition_to_open_state()
@@ -75,7 +78,7 @@ class RedisStorageTest extends TestCase
         $storage->open();
 
         $this->assertEquals(CircuitState::Open, $storage->getState());
-        $this->assertEquals(0, $storage->getNumberOfFailures());
+        $this->assertEquals(0, $storage->getCounter()->numberOfFailures());
         $this->assertNotEquals(0, $storage->openedAt());
     }
 

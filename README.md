@@ -86,9 +86,10 @@ use Stfn\CircuitBreaker\CircuitBreaker;
 
 $breaker = CircuitBreaker::for('3rd-party-service')
     ->withOptions([
-        'failure_threshold' => 10,
-        'recovery_time' => 120,
-        'sample_duration' => 60,
+        'failure_threshold' => 10, // Number of failures triggering the transition to the open state
+        'recovery_time' => 120, // Time in seconds to keep the circuit breaker open before attempting recovery
+        'sample_duration' => 60, // Duration in seconds within which failures are counted
+        'consecutive_success' => 3 // Number of consecutive successful calls required to transition from half open to closed state
     ]);
 ```
 

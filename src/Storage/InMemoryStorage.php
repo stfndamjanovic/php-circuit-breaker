@@ -3,6 +3,7 @@
 namespace Stfn\CircuitBreaker\Storage;
 
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Counter;
 
 class InMemoryStorage extends CircuitBreakerStorage
 {
@@ -15,6 +16,11 @@ class InMemoryStorage extends CircuitBreakerStorage
      * @var int
      */
     protected int $failCount = 0;
+
+    /**
+     * @var int
+     */
+    protected int $successCount = 0;
 
     /**
      * @var int|null
@@ -36,6 +42,9 @@ class InMemoryStorage extends CircuitBreakerStorage
     public function setState(CircuitState $state): void
     {
         $this->state = $state;
+
+        $this->failCount = 0;
+        $this->successCount = 0;
     }
 
     /**
@@ -49,17 +58,17 @@ class InMemoryStorage extends CircuitBreakerStorage
     /**
      * @return void
      */
-    public function resetCounter(): void
+    public function incrementSuccess(): void
     {
-        $this->failCount = 0;
+        $this->successCount++;
     }
 
     /**
-     * @return int
+     * @return Counter
      */
-    public function getNumberOfFailures(): int
+    public function getCounter(): Counter
     {
-        return $this->failCount;
+        return new Counter($this->successCount, $this->failCount);
     }
 
     /**
@@ -75,11 +84,9 @@ class InMemoryStorage extends CircuitBreakerStorage
      */
     public function open(): void
     {
-        $this->state = CircuitState::Open;
+        $this->setState(CircuitState::Open);
 
         $this->openedAt = time();
-
-        $this->resetCounter();
     }
 
     /**
@@ -87,7 +94,7 @@ class InMemoryStorage extends CircuitBreakerStorage
      */
     public function close(): void
     {
-        $this->state = CircuitState::Closed;
+        $this->setState(CircuitState::Closed);
 
         $this->openedAt = null;
     }

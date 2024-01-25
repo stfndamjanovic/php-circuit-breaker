@@ -68,7 +68,7 @@ class CircuitBreakerTest extends TestCase
             }
         }
 
-        $this->assertEquals($tries, $breaker->getStorage()->getNumberOfFailures());
+        $this->assertEquals($tries, $breaker->getStorage()->getCounter()->numberOfFailures());
     }
 
     public function test_if_it_will_open_circuit_when_failure_threshold_is_reached()
@@ -91,17 +91,24 @@ class CircuitBreakerTest extends TestCase
         }
 
         $this->assertTrue($breaker->isOpen());
-        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getCounter()->numberOfFailures());
     }
 
-    public function test_if_it_will_close_circuit_after_success_call()
+    public function test_if_it_will_close_circuit_after_consecutive_success_calls()
     {
-        $breaker = CircuitBreaker::for('test-service');
+        $breaker = CircuitBreaker::for('test-service')
+            ->withOptions(['consecutive_success' => 3]);
+
         $breaker->getStorage()->setState(CircuitState::HalfOpen);
 
         $success = function () {
             return true;
         };
+
+        $breaker->call($success);
+        $breaker->call($success);
+
+        $this->assertEquals(CircuitState::HalfOpen, $breaker->getStorage()->getState());
 
         $breaker->call($success);
 
@@ -210,7 +217,7 @@ class CircuitBreakerTest extends TestCase
             throw $testException;
         });
 
-        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getCounter()->numberOfFailures());
     }
 
     public function test_if_it_can_fail_even_without_exception()
@@ -232,7 +239,7 @@ class CircuitBreakerTest extends TestCase
         }
 
         // Make sure that number of failures is reset to zero
-        $this->assertEquals(0, $breaker->getStorage()->getNumberOfFailures());
+        $this->assertEquals(0, $breaker->getStorage()->getCounter()->numberOfFailures());
         $this->assertTrue($breaker->isOpen());
     }
 

@@ -20,6 +20,7 @@ class ConfigTest extends TestCase
             'failure_threshold' => 20,
             'recovery_time' => 200,
             'sample_duration' => 20,
+            'consecutive_success' => 3,
         ];
 
         $config = Config::fromArray($setup);
@@ -27,6 +28,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($setup['failure_threshold'], $config->failureThreshold);
         $this->assertEquals($setup['recovery_time'], $config->recoveryTime);
         $this->assertEquals($setup['sample_duration'], $config->sampleDuration);
+        $this->assertEquals($setup['consecutive_success'], $config->consecutiveSuccess);
 
         $this->assertEquals($setup, $config->toArray());
     }

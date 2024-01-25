@@ -4,6 +4,7 @@ namespace Stfn\CircuitBreaker\Storage;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitState;
+use Stfn\CircuitBreaker\Counter;
 
 abstract class CircuitBreakerStorage
 {
@@ -50,12 +51,12 @@ abstract class CircuitBreakerStorage
     /**
      * @return void
      */
-    abstract public function resetCounter(): void;
+    abstract public function incrementSuccess(): void;
 
     /**
-     * @return int
+     * @return Counter
      */
-    abstract public function getNumberOfFailures(): int;
+    abstract public function getCounter(): Counter;
 
     /**
      * @return int
