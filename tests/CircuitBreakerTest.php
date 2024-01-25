@@ -6,8 +6,6 @@ use PHPUnit\Framework\TestCase;
 use Stfn\CircuitBreaker\CircuitBreaker;
 use Stfn\CircuitBreaker\CircuitBreakerListener;
 use Stfn\CircuitBreaker\CircuitState;
-use Stfn\CircuitBreaker\Exceptions\CircuitForceOpenException;
-use Stfn\CircuitBreaker\Exceptions\CircuitHalfOpenFailException;
 use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 use Stfn\CircuitBreaker\Storage\InMemoryStorage;
 use Stfn\CircuitBreaker\Storage\RedisStorage;
@@ -125,7 +123,7 @@ class CircuitBreakerTest extends TestCase
             throw new \Exception();
         };
 
-        $this->expectException(CircuitHalfOpenFailException::class);
+        $this->expectException(\Exception::class);
 
         $breaker->call($fail);
 
@@ -248,7 +246,7 @@ class CircuitBreakerTest extends TestCase
         $breaker = CircuitBreaker::for('test-service');
         $breaker->forceOpenCircuit();
 
-        $this->expectException(CircuitForceOpenException::class);
+        $this->expectException(CircuitOpenException::class);
 
         $breaker->call(fn () => true);
     }

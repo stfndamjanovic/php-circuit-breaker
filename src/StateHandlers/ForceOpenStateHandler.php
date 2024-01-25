@@ -2,7 +2,7 @@
 
 namespace Stfn\CircuitBreaker\StateHandlers;
 
-use Stfn\CircuitBreaker\Exceptions\CircuitForceOpenException;
+use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
 
 class ForceOpenStateHandler extends StateHandler
 {
@@ -10,10 +10,10 @@ class ForceOpenStateHandler extends StateHandler
      * @param \Closure $action
      * @param ...$args
      * @return void
-     * @throws CircuitForceOpenException
+     * @throws CircuitOpenException
      */
     public function beforeCall(\Closure $action, ...$args)
     {
-        throw CircuitForceOpenException::make();
+        throw CircuitOpenException::make($this->breaker->getName());
     }
 }

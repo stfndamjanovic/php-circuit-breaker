@@ -43,7 +43,7 @@ The `Open` state indicates that the circuit breaker has detected a critical fail
 
 ### Force Open
 
-`Force Open` is not part of the regular flow. It can be utilized when intentional suspension of calls to a service is required. In this state, a `CircuitForceOpenException` will be thrown.
+`Force Open` is not part of the regular flow. It can be utilized when intentional suspension of calls to a service is required. In this state, a `CircuitOpenException` will be thrown.
 
 To force the circuit breaker into the Force Open state, use the following:
 ```php
