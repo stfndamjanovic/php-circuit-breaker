@@ -1,5 +1,5 @@
 {
-    "name": "stfn/circuit-breaker",
+    "name": "stfn/php-circuit-breaker",
     "description": "This is circuit-breaker pattern implemented in PHP",
     "keywords": [
         "stfndamjanovic",
