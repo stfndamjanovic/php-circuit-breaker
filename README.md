@@ -10,7 +10,7 @@ You can find more info about it [here](https://learn.microsoft.com/en-us/azure/a
 You can install the package via composer:
 
 ```bash
-composer require stfndamjanovic/php-circuit-breaker
+composer require stfn/php-circuit-breaker
 ```
 
 ## Usage
