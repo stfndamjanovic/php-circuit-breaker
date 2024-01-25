@@ -1,6 +1,6 @@
 # Circuit breaker in PHP
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/stfndamjanovic/circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfndamjanovic/circuit-breaker)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/stfn/php-circuit-breaker.svg?style=flat-square)](https://packagist.org/packages/stfn/php-circuit-breaker)
 
 This package provides an implementation of the circuit breaker pattern in PHP. 
 You can find more info about it [here](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker).
