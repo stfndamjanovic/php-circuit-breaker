@@ -10,6 +10,6 @@ class InvalidStateException extends \Exception
      */
     public static function make($state)
     {
-        return new self("State {$state} is not valid");
+        return new self("State {$state} is not valid.");
     }
 }

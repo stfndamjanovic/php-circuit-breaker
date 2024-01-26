@@ -29,7 +29,6 @@ class CircuitBreakerTest extends TestCase
         });
 
         $this->assertEquals($object, $result);
-
         $this->assertTrue($breaker->isClosed());
     }
 
@@ -202,43 +201,22 @@ class CircuitBreakerTest extends TestCase
         $this->assertEquals(2, $object->count);
     }
 
-    public function test_if_it_can_skip_some_exception()
+    public function test_if_it_can_skip_count_of_some_exceptions()
     {
         $testException = new class () extends \Exception {};
 
         $breaker = CircuitBreaker::for('test-service')
-            ->skipFailure(function (\Exception $exception) use ($testException) {
+            ->skipFailureCount(function (\Exception $exception) use ($testException) {
                 return $exception instanceof $testException;
             });
+
+        $this->expectException(\Exception::class);
 
         $breaker->call(function () use ($testException) {
             throw $testException;
         });
 
         $this->assertEquals(0, $breaker->getStorage()->getCounter()->numberOfFailures());
-    }
-
-    public function test_if_it_can_fail_even_without_exception()
-    {
-        $breaker = CircuitBreaker::for('test-service')
-            ->withOptions([
-                'failure_threshold' => 3,
-            ])
-            ->failWhen(function ($result) {
-                return $result instanceof \stdClass;
-            });
-
-        foreach (range(1, 3) as $i) {
-            try {
-                $breaker->call(fn () => new \stdClass());
-            } catch (\Exception) {
-
-            }
-        }
-
-        // Make sure that number of failures is reset to zero
-        $this->assertEquals(0, $breaker->getStorage()->getCounter()->numberOfFailures());
-        $this->assertTrue($breaker->isOpen());
     }
 
     public function test_if_it_can_force_open_circuit()

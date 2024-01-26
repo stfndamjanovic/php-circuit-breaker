@@ -91,20 +91,15 @@ $breaker = CircuitBreaker::for('3rd-party-service')
     ]);
 ```
 
-## Interceptors
+## Excluding some failures
 
-You can configure the circuit breaker to fail based on specific conditions or to skip certain types of failures:
+Change the circuit breaker behavior by configuring it to exclude certain types of failures:
 
 ```php
 use Stfn\CircuitBreaker\CircuitBreaker;
 
 $breaker = CircuitBreaker::for('3rd-party-service')
-    ->failWhen(function ($result) {
-        return $result->status() >= 400;
-    });
-
-$breaker = CircuitBreaker::for('3rd-party-service')
-    ->skipFailure(function ($exception) {
+    ->skipFailureCount(function ($exception) {
         return $exception->getCode() < 500;
     });
 ```

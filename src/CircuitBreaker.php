@@ -36,12 +36,7 @@ class CircuitBreaker
     /**
      * @var \Closure|null
      */
-    protected \Closure|null $failWhenCallback = null;
-
-    /**
-     * @var \Closure|null
-     */
-    protected \Closure|null $skipFailureCallback = null;
+    protected \Closure|null $skipFailureCountCallback = null;
 
     /**
      * @param string $name
@@ -200,20 +195,9 @@ class CircuitBreaker
      * @param \Closure $closure
      * @return $this
      */
-    public function skipFailure(\Closure $closure)
+    public function skipFailureCount(\Closure $closure)
     {
-        $this->skipFailureCallback = $closure;
-
-        return $this;
-    }
-
-    /**
-     * @param \Closure $closure
-     * @return $this
-     */
-    public function failWhen(\Closure $closure)
-    {
-        $this->failWhenCallback = $closure;
+        $this->skipFailureCountCallback = $closure;
 
         return $this;
     }
@@ -264,16 +248,8 @@ class CircuitBreaker
     /**
      * @return \Closure|null
      */
-    public function getFailWhenCallback(): ?\Closure
+    public function getSkipFailureCountCallback(): ?\Closure
     {
-        return $this->failWhenCallback;
-    }
-
-    /**
-     * @return \Closure|null
-     */
-    public function getSkipFailureCallback(): ?\Closure
-    {
-        return $this->skipFailureCallback;
+        return $this->skipFailureCountCallback;
     }
 }

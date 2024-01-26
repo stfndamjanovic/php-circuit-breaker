@@ -47,7 +47,6 @@ class RedisStorageTest extends TestCase
 
         $storage->incrementFailure();
 
-
         $this->assertEquals(2, $storage->getCounter()->numberOfFailures());
     }
 

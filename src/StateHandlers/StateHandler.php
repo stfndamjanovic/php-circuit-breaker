@@ -3,7 +3,6 @@
 namespace Stfn\CircuitBreaker\StateHandlers;
 
 use Stfn\CircuitBreaker\CircuitBreaker;
-use Stfn\CircuitBreaker\Exceptions\FailOnSuccessException;
 
 class StateHandler
 {
@@ -64,13 +63,15 @@ class StateHandler
      */
     public function handleFailure(\Exception $exception)
     {
-        if (is_callable($this->breaker->getSkipFailureCallback())) {
-            $shouldSkip = call_user_func($this->breaker->getSkipFailureCallback(), $exception);
+        if (is_callable($this->breaker->getSkipFailureCountCallback())) {
+            $shouldSkip = call_user_func($this->breaker->getSkipFailureCountCallback(), $exception);
 
             if ($shouldSkip) {
-                return;
+                throw $exception;
             }
         }
+
+        $this->breaker->getStorage()->incrementFailure();
 
         foreach ($this->breaker->getListeners() as $listener) {
             $listener->onFail($this->breaker, $exception);
@@ -84,18 +85,9 @@ class StateHandler
     /**
      * @param $result
      * @return void
-     * @throws FailOnSuccessException
      */
     public function handleSucess($result)
     {
-        if (is_callable($this->breaker->getFailWhenCallback())) {
-            $shouldFail = call_user_func($this->breaker->getFailWhenCallback(), $result);
-
-            if ($shouldFail) {
-                throw FailOnSuccessException::make();
-            }
-        }
-
         $this->onSucess();
 
         foreach ($this->breaker->getListeners() as $listener) {

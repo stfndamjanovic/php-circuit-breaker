@@ -30,7 +30,7 @@ class Config
      * @param int $failureThreshold
      * @param int $recoveryTime
      * @param int $sampleDuration
-     * @param int $consecutiveSuccesses
+     * @param int $consecutiveSuccess
      */
     public function __construct(
         int $failureThreshold = 5,
