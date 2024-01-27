@@ -2,6 +2,8 @@
 
 namespace Stfn\CircuitBreaker\StateHandlers;
 
+use Stfn\CircuitBreaker\Exceptions\CircuitOpenException;
+
 class HalfOpenStateHandler extends StateHandler
 {
     /**
@@ -25,5 +27,7 @@ class HalfOpenStateHandler extends StateHandler
     public function onFailure(\Exception $exception)
     {
         $this->breaker->openCircuit();
+        
+        throw CircuitOpenException::make($this->breaker->getName());
     }
 }
