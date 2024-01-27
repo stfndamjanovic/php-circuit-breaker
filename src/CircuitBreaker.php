@@ -56,8 +56,6 @@ class CircuitBreaker
      */
     public function call(\Closure $action, ...$args)
     {
-        $this->storage->init($this);
-
         $stateHandler = $this->makeStateHandler();
 
         return $stateHandler->call($action, $args);
@@ -209,6 +207,8 @@ class CircuitBreaker
     public function storage(CircuitBreakerStorage $storage)
     {
         $this->storage = $storage;
+        
+        $this->storage->init($this);
 
         return $this;
     }
