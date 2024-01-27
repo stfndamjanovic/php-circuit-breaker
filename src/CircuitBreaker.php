@@ -207,7 +207,7 @@ class CircuitBreaker
     public function storage(CircuitBreakerStorage $storage)
     {
         $this->storage = $storage;
-        
+
         $this->storage->init($this);
 
         return $this;
