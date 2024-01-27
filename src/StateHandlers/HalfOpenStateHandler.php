@@ -23,11 +23,12 @@ class HalfOpenStateHandler extends StateHandler
     /**
      * @param \Exception $exception
      * @return void
+     * @throws CircuitOpenException
      */
     public function onFailure(\Exception $exception)
     {
         $this->breaker->openCircuit();
-        
+
         throw CircuitOpenException::make($this->breaker->getName());
     }
 }
