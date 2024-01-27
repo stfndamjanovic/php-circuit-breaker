@@ -28,4 +28,24 @@ class OpenStateHandler extends StateHandler
 
         throw CircuitOpenException::make($this->breaker->getName());
     }
+
+    /**
+     * @return void
+     */
+    public function onSucess()
+    {
+        $this->breaker->getStorage()->incrementSuccess();
+    }
+
+    /**
+     * @param \Exception $exception
+     * @return void
+     * @throws CircuitOpenException
+     */
+    public function onFailure(\Exception $exception)
+    {
+        $this->breaker->openCircuit();
+
+        throw CircuitOpenException::make($this->breaker->getName());
+    }
 }
